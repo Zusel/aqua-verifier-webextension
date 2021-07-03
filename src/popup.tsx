@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
+import { verifier } from "./verifier";
 
 const Popup = () => {
   const [count, setCount] = useState(0);
+  const [pageTitle, setPageTitle] = useState('');
   const [currentURL, setCurrentURL] = useState<string>();
 
   useEffect(() => {
@@ -32,6 +34,29 @@ const Popup = () => {
     });
   };
 
+  const verifyPage = (title: string) => {
+    // todo call verifier here then send result to tab for rendering
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      const tab = tabs[0];
+      if (tab.id) {
+        chrome.tabs.sendMessage(
+          tab.id,
+          {
+            pageTitle: title,
+          },
+          (msg) => {
+            console.log("result message:", msg);
+          }
+        );
+      }
+    });
+  };
+  
+  const handleInputChange = (e: any) => {
+    setPageTitle(e.target.value)
+    console.log(pageTitle)
+  }
+
   return (
     <>
       <ul style={{ minWidth: "700px" }}>
@@ -43,6 +68,13 @@ const Popup = () => {
         style={{ marginRight: "5px" }}
       >
         count up
+      </button>
+      <input value={pageTitle} onChange={handleInputChange}></input>
+      <button
+        onClick={() => verifyPage(pageTitle)}
+        style={{ marginRight: "5px" }}
+      >
+        Verify Page
       </button>
       <button onClick={changeBackground}>change background</button>
     </>

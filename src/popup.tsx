@@ -1,3 +1,4 @@
+import * as http from "http"; 
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { verifier } from "./verifier";
@@ -14,6 +15,14 @@ const Popup = () => {
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       setCurrentURL(tabs[0].url);
+    });
+  }, []);
+
+  useEffect(() => {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      const urlObj = new URL(tabs[0].url || '');
+      const extractedPageTitle = urlObj.pathname.split('/').pop() || '';
+      setPageTitle(extractedPageTitle);
     });
   }, []);
 
@@ -39,28 +48,28 @@ const Popup = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       const tab = tabs[0];
       if (tab.id) {
-        chrome.tabs.sendMessage(
-          tab.id,
-          {
-            pageTitle: title,
-          },
-          (msg) => {
-            console.log("result message:", msg);
-          }
-        );
+        const url = `http://localhost:9352/rest.php/data_accounting/v1/standard/page_last_rev?var1=${pageTitle}`;
+        http.get(url, (response) => {
+          response.on('data', (data) => {
+            chrome.tabs.sendMessage(
+              tab.id as number,
+              {
+                pageTitle: data.toString(),
+              },
+              (msg: string) => {
+                console.log("result message:", msg);
+              }
+            );
+          });
+        })
       }
     });
   };
   
-  const handleInputChange = (e: any) => {
-    setPageTitle(e.target.value)
-    console.log(pageTitle)
-  }
-
   return (
     <>
       <ul style={{ minWidth: "700px" }}>
-        <li>Current URL: {currentURL}</li>
+        <li>Current Page Title: {pageTitle}</li>
         <li>Current Time: {new Date().toLocaleTimeString()}</li>
       </ul>
       <button
@@ -69,7 +78,6 @@ const Popup = () => {
       >
         count up
       </button>
-      <input value={pageTitle} onChange={handleInputChange}></input>
       <button
         onClick={() => verifyPage(pageTitle)}
         style={{ marginRight: "5px" }}

@@ -57,7 +57,6 @@ const Popup = () => {
       <ul style={{ minWidth: "700px" }}>
         <li>Current Page Title: {pageTitle}</li>
       </ul>
-      </button>
       <button
         onClick={() => verifyPage(pageTitle)}
         style={{ marginRight: "5px" }}

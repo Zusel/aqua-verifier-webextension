@@ -27,6 +27,18 @@ const Popup = () => {
       const tab = tabs[0];
       if (tab.id) {
         const verificationStatus = await externalVerifierVerifyPage(title);
+        let badgeColor;
+        if (verificationStatus) {
+          // From https://www.schemecolor.com/easy-to-use-colors.php
+          // Apple
+          // (actually it is greenish in color, not red)
+          badgeColor = '#65B045';
+        } else {
+          // From https://www.schemecolor.com/no-news-is-good.php
+          // Fire Engine Red
+          badgeColor = '#FF0018';
+        }
+        chrome.browserAction.setBadgeBackgroundColor({color: badgeColor});
         chrome.tabs.sendMessage(
           tab.id as number,
           {

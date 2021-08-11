@@ -1,6 +1,10 @@
-import * as http from "http"; 
+import * as http from "http";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
+// Not yet typed
+// @ts-ignore
+import { verifyPage as externalVerifierVerifyPage } from "data-accounting-external-verifier";
+
 import { verifier } from "./verifier";
 
 const Popup = () => {
@@ -50,11 +54,12 @@ const Popup = () => {
       if (tab.id) {
         const url = `http://localhost:9352/rest.php/data_accounting/v1/standard/page_last_rev?var1=${pageTitle}`;
         http.get(url, (response) => {
-          response.on('data', (data) => {
+          response.on('data', async (data) => {
+            const verificationStatus = await externalVerifierVerifyPage(title);
             chrome.tabs.sendMessage(
               tab.id as number,
               {
-                pageTitle: data.toString(),
+                pageTitle: data.toString() + verificationStatus,
               },
               (msg: string) => {
                 console.log("result message:", msg);

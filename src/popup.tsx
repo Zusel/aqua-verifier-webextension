@@ -8,7 +8,6 @@ import { verifyPage as externalVerifierVerifyPage } from "data-accounting-extern
 const apiURL = 'http://localhost:9352/rest.php/data_accounting/v1/standard';
 
 const Popup = () => {
-  const [count, setCount] = useState(0);
   const [pageTitle, setPageTitle] = useState('');
   const [currentURL, setCurrentURL] = useState<string>();
 
@@ -64,11 +63,6 @@ const Popup = () => {
         <li>Current Page Title: {pageTitle}</li>
         <li>Current Time: {new Date().toLocaleTimeString()}</li>
       </ul>
-      <button
-        onClick={() => setCount(count + 1)}
-        style={{ marginRight: "5px" }}
-      >
-        count up
       </button>
       <button
         onClick={() => verifyPage(pageTitle)}

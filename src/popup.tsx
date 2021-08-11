@@ -5,7 +5,7 @@ import ReactDOM from "react-dom";
 // @ts-ignore
 import { verifyPage as externalVerifierVerifyPage } from "data-accounting-external-verifier";
 
-import { verifier } from "./verifier";
+const apiURL = 'http://localhost:9352/rest.php/data_accounting/v1/standard';
 
 const Popup = () => {
   const [count, setCount] = useState(0);
@@ -13,20 +13,12 @@ const Popup = () => {
   const [currentURL, setCurrentURL] = useState<string>();
 
   useEffect(() => {
-    chrome.browserAction.setBadgeText({ text: count.toString() });
-  }, [count]);
-
-  useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       setCurrentURL(tabs[0].url);
-    });
-  }, []);
-
-  useEffect(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       const urlObj = new URL(tabs[0].url || '');
       const extractedPageTitle = urlObj.pathname.split('/').pop() || '';
       setPageTitle(extractedPageTitle);
+      //setBadge(urlObj);
     });
   }, []);
 
@@ -49,24 +41,19 @@ const Popup = () => {
 
   const verifyPage = (title: string) => {
     // todo call verifier here then send result to tab for rendering
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
       const tab = tabs[0];
       if (tab.id) {
-        const url = `http://localhost:9352/rest.php/data_accounting/v1/standard/page_last_rev?var1=${pageTitle}`;
-        http.get(url, (response) => {
-          response.on('data', async (data) => {
-            const verificationStatus = await externalVerifierVerifyPage(title);
-            chrome.tabs.sendMessage(
-              tab.id as number,
-              {
-                pageTitle: data.toString() + verificationStatus,
-              },
-              (msg: string) => {
-                console.log("result message:", msg);
-              }
-            );
-          });
-        })
+        const verificationStatus = await externalVerifierVerifyPage(title);
+        chrome.tabs.sendMessage(
+          tab.id as number,
+          {
+            pageTitle: verificationStatus,
+          },
+          (msg: string) => {
+            console.log("result message:", msg);
+          }
+        );
       }
     });
   };

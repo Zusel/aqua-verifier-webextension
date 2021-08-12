@@ -26,7 +26,9 @@ const Popup = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
       const tab = tabs[0];
       if (tab.id) {
+        chrome.browserAction.setBadgeText({ text: '⏳' });
         const verificationStatus = await externalVerifierVerifyPage(title);
+        chrome.browserAction.setBadgeText({ text: 'DA' });
         let badgeColor;
         if (verificationStatus) {
           // From https://www.schemecolor.com/easy-to-use-colors.php

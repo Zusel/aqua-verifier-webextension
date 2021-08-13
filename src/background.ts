@@ -1,22 +1,22 @@
-import { setBadge } from "./set_badge";
+import { setInitialBadge } from "./verifier";
 
 // https://stackoverflow.com/questions/60545285/how-to-use-onupdated-and-onactivated-simultanously
 
-function setBadgeWrapper(tab: any) {
+function setInitialBadgeWrapper(tab: any) {
     const urlObj = new URL(tab.url || '');
-    setBadge(urlObj);
+    setInitialBadge(urlObj);
 }
 
 chrome.tabs.onActivated.addListener((info) => {
   chrome.tabs.get(info.tabId, function(tab) {
-    setBadgeWrapper(tab);
+    setInitialBadgeWrapper(tab);
   });
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  setBadgeWrapper(tab);
+  setInitialBadgeWrapper(tab);
 });
 
 chrome.tabs.onCreated.addListener((tab) => {
-  setBadgeWrapper(tab);
+  setInitialBadgeWrapper(tab);
 });

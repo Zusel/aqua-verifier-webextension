@@ -1,9 +1,7 @@
 import * as http from "http";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-// Not yet typed
-// @ts-ignore
-import { verifyPage as externalVerifierVerifyPage } from "data-accounting-external-verifier";
+import { verifyPage } from "./verifier";
 
 const apiURL = 'http://localhost:9352/rest.php/data_accounting/v1/standard';
 
@@ -21,39 +19,6 @@ const Popup = () => {
     });
   }, []);
 
-  const verifyPage = (title: string) => {
-    // todo call verifier here then send result to tab for rendering
-    chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
-      const tab = tabs[0];
-      if (tab.id) {
-        chrome.browserAction.setBadgeText({ text: '⏳' });
-        const verificationStatus = await externalVerifierVerifyPage(title);
-        chrome.browserAction.setBadgeText({ text: 'DA' });
-        let badgeColor;
-        if (verificationStatus) {
-          // From https://www.schemecolor.com/easy-to-use-colors.php
-          // Apple
-          // (actually it is greenish in color, not red)
-          badgeColor = '#65B045';
-        } else {
-          // From https://www.schemecolor.com/no-news-is-good.php
-          // Fire Engine Red
-          badgeColor = '#FF0018';
-        }
-        chrome.browserAction.setBadgeBackgroundColor({color: badgeColor});
-        chrome.tabs.sendMessage(
-          tab.id as number,
-          {
-            pageTitle: verificationStatus,
-          },
-          (msg: string) => {
-            console.log("result message:", msg);
-          }
-        );
-      }
-    });
-  };
-  
   return (
     <>
       <ul style={{ minWidth: "700px" }}>

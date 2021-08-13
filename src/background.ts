@@ -1,4 +1,4 @@
-import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA } from "./verifier";
+import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, setBadgeStatus } from "./verifier";
 
 // https://stackoverflow.com/questions/60545285/how-to-use-onupdated-and-onactivated-simultanously
 
@@ -21,6 +21,8 @@ function doInitialVerification(tab: any) {
     chrome.cookies.get({url: tab.url, name: "is_da_verified"}, (cookie) => {
       if (cookie === null) {
         verifyPage(pageTitle);
+      } else {
+        setBadgeStatus(cookie.value === 'true');
       }
     })
   });

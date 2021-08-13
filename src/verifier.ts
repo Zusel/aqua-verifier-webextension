@@ -13,6 +13,21 @@ export function extractPageTitle(urlObj: URL) {
   return urlObj.pathname.split('/').pop() || '';
 }
 
+export function setBadgeStatus(status: boolean) {
+  let badgeColor;
+  if (status) {
+    // From https://www.schemecolor.com/easy-to-use-colors.php
+    // Apple
+    // (actually it is greenish in color, not red)
+    badgeColor = '#65B045';
+  } else {
+    // From https://www.schemecolor.com/no-news-is-good.php
+    // Fire Engine Red
+    badgeColor = '#FF0018';
+  }
+  chrome.browserAction.setBadgeBackgroundColor({color: badgeColor});
+}
+
 export function setInitialBadge(urlObj: URL) {
   const extractedPageTitle = extractPageTitle(urlObj);
   if (urlObj.hostname != "localhost") {
@@ -52,18 +67,7 @@ export function verifyPage (title: string) {
       chrome.browserAction.setBadgeText({ text: '⏳' });
       const verificationStatus = await externalVerifierVerifyPage(title);
       chrome.browserAction.setBadgeText({ text: 'DA' });
-      let badgeColor;
-      if (verificationStatus) {
-        // From https://www.schemecolor.com/easy-to-use-colors.php
-        // Apple
-        // (actually it is greenish in color, not red)
-        badgeColor = '#65B045';
-      } else {
-        // From https://www.schemecolor.com/no-news-is-good.php
-        // Fire Engine Red
-        badgeColor = '#FF0018';
-      }
-      chrome.browserAction.setBadgeBackgroundColor({color: badgeColor});
+      setBadgeStatus(verificationStatus)
       chrome.tabs.sendMessage(
         tab.id as number,
         {

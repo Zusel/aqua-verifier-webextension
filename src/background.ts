@@ -6,40 +6,39 @@ function getUrlObj(tab: any) {
   return new URL(tab.url || '');
 }
 
-function setInitialBadgeWrapper(tab: any) {
+function doInitialVerification(tab: any, doVerify: boolean = false) {
   const urlObj = getUrlObj(tab);
-  return setInitialBadge(urlObj);
-}
-
-function doInitialVerification(tab: any) {
-  chrome.browserAction.getBadgeText({}, (badgeText) => {
-    if (badgeText === BadgeTextNA) {
-      return
-    }
-    const urlObj = getUrlObj(tab);
-    const pageTitle = extractPageTitle(urlObj);
-    chrome.cookies.get({url: tab.url, name: "is_da_verified"}, (cookie) => {
-      if (cookie === null) {
-        verifyPage(pageTitle);
-      } else {
-        setBadgeStatus(cookie.value === 'true');
+  setInitialBadge(urlObj)
+  .then(() => {
+    chrome.browserAction.getBadgeText({}, (badgeText) => {
+      if (badgeText === BadgeTextNA) {
+        return
       }
-    })
+      const urlObj = getUrlObj(tab);
+      const pageTitle = extractPageTitle(urlObj);
+      chrome.cookies.get({url: tab.url, name: "is_da_verified"}, (cookie) => {
+        if (cookie === null) {
+          if (doVerify) {
+            verifyPage(pageTitle);
+          }
+        } else {
+          setBadgeStatus(cookie.value === 'true');
+        }
+      })
+    });
   });
 }
 
 chrome.tabs.onActivated.addListener((info) => {
   chrome.tabs.get(info.tabId, function(tab) {
-    setInitialBadgeWrapper(tab);
+    doInitialVerification(tab);
   });
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  setInitialBadgeWrapper(tab)
-  .then(() => doInitialVerification(tab));
+  doInitialVerification(tab, true);
 });
 
 chrome.tabs.onCreated.addListener((tab) => {
-  setInitialBadgeWrapper(tab)
-  .then(() => doInitialVerification(tab));
+  doInitialVerification(tab, true);
 });

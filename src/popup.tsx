@@ -1,7 +1,7 @@
 import * as http from "http";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import { verifyPage } from "./verifier";
+import { verifyPage, extractPageTitle } from "./verifier";
 
 const apiURL = 'http://localhost:9352/rest.php/data_accounting/v1/standard';
 
@@ -13,7 +13,7 @@ const Popup = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       setCurrentURL(tabs[0].url);
       const urlObj = new URL(tabs[0].url || '');
-      const extractedPageTitle = urlObj.pathname.split('/').pop() || '';
+      const extractedPageTitle = extractPageTitle(urlObj);
       setPageTitle(extractedPageTitle);
       //setBadge(urlObj);
     });

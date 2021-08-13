@@ -3,37 +3,46 @@ import * as http from "http";
 // @ts-ignore
 import { verifyPage as externalVerifierVerifyPage } from "data-accounting-external-verifier";
 
-const BadgeTextNA = 'N/A';
+export const BadgeTextNA = 'N/A';
 // Dark gray custom picked
 const BadgeColorNA = '#ABABAD';
 
 const apiURL = 'http://localhost:9352/rest.php/data_accounting/v1/standard';
 
+export function extractPageTitle(urlObj: URL) {
+  return urlObj.pathname.split('/').pop() || '';
+}
+
 export function setInitialBadge(urlObj: URL) {
-  const extractedPageTitle = urlObj.pathname.split('/').pop() || '';
+  const extractedPageTitle = extractPageTitle(urlObj);
   if (urlObj.hostname != "localhost") {
     chrome.browserAction.setBadgeBackgroundColor({color: BadgeColorNA});
     chrome.browserAction.setBadgeText({ text: BadgeTextNA });
-    return
+    return Promise.resolve(false);
   }
-  const urlForChecking = `${apiURL}/page_last_rev?var1=${extractedPageTitle}`;
-  http.get(urlForChecking, (response) => {
-    response.on('data', (data) => {
-      const respText = data.toString();
-      let badgeText, badgeColor;
-      if (respText != "[]") {
-        badgeText = "DA";
-        // Color taken from https://www.schemecolor.com/easy-to-use-colors.php
-        // Blueberry
-        badgeColor = '#427FED';
-      } else {
-        badgeText = BadgeTextNA;
-        badgeColor = BadgeColorNA;
-      }
-      chrome.browserAction.setBadgeBackgroundColor({color: badgeColor});
-      chrome.browserAction.setBadgeText({ text: badgeText });
+  const urlForChecking = `${apiURL}/get_page_last_rev?var1=${extractedPageTitle}`;
+  const promise = new Promise((resolve, reject) => {
+    http.get(urlForChecking, (response) => {
+      response.on('data', (data) => {
+        const respText = data.toString();
+        let badgeText, badgeColor;
+        if (respText != "[]") {
+          badgeText = "DA";
+          // Color taken from https://www.schemecolor.com/easy-to-use-colors.php
+          // Blueberry
+          badgeColor = '#427FED';
+        } else {
+          badgeText = BadgeTextNA;
+          badgeColor = BadgeColorNA;
+        }
+        chrome.browserAction.setBadgeBackgroundColor({color: badgeColor});
+        chrome.browserAction.setBadgeText({ text: badgeText });
+        resolve(badgeText != BadgeTextNA);
+      });
+      response.on('error', (e) => reject(false));
     });
-  })
+  });
+  return promise;
 }
 
 export function verifyPage (title: string) {
@@ -64,6 +73,12 @@ export function verifyPage (title: string) {
           console.log("result message:", msg);
         }
       );
+      // Update cookie
+      if (tab.url) {
+        chrome.cookies.set({url: tab.url, name: "is_da_verified", value: verificationStatus.toString()});
+      }
+      return verificationStatus;
     }
+    return false;
   });
 }

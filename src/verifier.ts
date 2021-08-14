@@ -36,14 +36,19 @@ export function setBadgeStatus(status: string) {
   chrome.browserAction.setBadgeBackgroundColor({color: badgeColor});
 }
 
+function setBadgeNA() {
+  chrome.browserAction.setBadgeBackgroundColor({color: BadgeColorNA});
+  chrome.browserAction.setBadgeText({ text: BadgeTextNA });
+}
+
 export function setInitialBadge(urlObj: URL | null) {
   if (!urlObj) {
+    setBadgeNA();
     return Promise.resolve(false);
   }
   const extractedPageTitle = extractPageTitle(urlObj);
   if (urlObj.hostname != "localhost") {
-    chrome.browserAction.setBadgeBackgroundColor({color: BadgeColorNA});
-    chrome.browserAction.setBadgeText({ text: BadgeTextNA });
+    setBadgeNA();
     return Promise.resolve(false);
   }
   const urlForChecking = `${apiURL}/get_page_last_rev?var1=${extractedPageTitle}`;

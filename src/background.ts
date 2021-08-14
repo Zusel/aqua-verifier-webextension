@@ -4,7 +4,7 @@ import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, setBadgeSta
 const processingTabId: { [key: number]: boolean } = {};
 
 function getUrlObj(tab: any) {
-  return tab.url? new URL(tab.url): null;
+  return tab.url ? new URL(tab.url): null;
 }
 
 function doInitialVerification(tab: any, doVerify: boolean = false) {

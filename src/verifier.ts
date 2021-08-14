@@ -12,8 +12,8 @@ const BadgeColorBlue = '#427FED';
 
 const apiURL = 'http://localhost:9352/rest.php/data_accounting/v1/standard';
 
-export function extractPageTitle(urlObj: URL) {
-  return urlObj.pathname.split('/').pop() || '';
+export function extractPageTitle(urlObj: URL | null) {
+  return urlObj ? urlObj.pathname.split('/').pop(): '';
 }
 
 export function setBadgeStatus(status: string) {
@@ -36,7 +36,10 @@ export function setBadgeStatus(status: string) {
   chrome.browserAction.setBadgeBackgroundColor({color: badgeColor});
 }
 
-export function setInitialBadge(urlObj: URL) {
+export function setInitialBadge(urlObj: URL | null) {
+  if (!urlObj) {
+    return Promise.resolve(false);
+  }
   const extractedPageTitle = extractPageTitle(urlObj);
   if (urlObj.hostname != "localhost") {
     chrome.browserAction.setBadgeBackgroundColor({color: BadgeColorNA});

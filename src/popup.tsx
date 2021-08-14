@@ -14,6 +14,9 @@ const Popup = () => {
       setCurrentURL(tabs[0].url);
       const urlObj = new URL(tabs[0].url || '');
       const extractedPageTitle = extractPageTitle(urlObj);
+      if (!extractedPageTitle) {
+        return;
+      }
       setPageTitle(extractedPageTitle);
       //setBadge(urlObj);
     });

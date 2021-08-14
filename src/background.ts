@@ -4,7 +4,7 @@ import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, setBadgeSta
 const processingTabId: { [key: number]: boolean } = {};
 
 function getUrlObj(tab: any) {
-  return new URL(tab.url || '');
+  return tab.url? new URL(tab.url): null;
 }
 
 function doInitialVerification(tab: any, doVerify: boolean = false) {
@@ -17,10 +17,14 @@ function doInitialVerification(tab: any, doVerify: boolean = false) {
   .then(() => {
     chrome.browserAction.getBadgeText({}, (badgeText) => {
       if (badgeText === BadgeTextNA) {
+        delete processingTabId[tab.id];
         return;
       }
-      const urlObj = getUrlObj(tab);
       const pageTitle = extractPageTitle(urlObj);
+      if (!pageTitle) {
+        delete processingTabId[tab.id];
+        return;
+      }
       chrome.cookies.get({url: tab.url, name: pageTitle}, (cookie) => {
         console.log("doInitialVerification, cookie", cookie ? cookie.value : cookie, pageTitle);
         if (cookie === null) {

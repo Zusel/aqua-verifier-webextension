@@ -6,6 +6,9 @@ import { verifyPage as externalVerifierVerifyPage } from "data-accounting-extern
 export const BadgeTextNA = 'N/A';
 // Dark gray custom picked
 const BadgeColorNA = '#ABABAD';
+// Color taken from https://www.schemecolor.com/easy-to-use-colors.php
+// Blueberry
+const BadgeColorBlue = '#427FED';
 
 const apiURL = 'http://localhost:9352/rest.php/data_accounting/v1/standard';
 
@@ -13,17 +16,22 @@ export function extractPageTitle(urlObj: URL) {
   return urlObj.pathname.split('/').pop() || '';
 }
 
-export function setBadgeStatus(status: boolean) {
+export function setBadgeStatus(status: string) {
   let badgeColor;
-  if (status) {
+  if (status === 'VERIFIED') {
     // From https://www.schemecolor.com/easy-to-use-colors.php
     // Apple
     // (actually it is greenish in color, not red)
     badgeColor = '#65B045';
-  } else {
+  } else if (status === 'INVALID') {
     // From https://www.schemecolor.com/no-news-is-good.php
     // Fire Engine Red
     badgeColor = '#FF0018';
+  } else if (status === 'N/A') {
+    badgeColor = BadgeColorBlue;
+  } else {
+    // Something wrong is happening
+    badgeColor = 'black';
   }
   chrome.browserAction.setBadgeBackgroundColor({color: badgeColor});
 }
@@ -43,9 +51,7 @@ export function setInitialBadge(urlObj: URL) {
         let badgeText, badgeColor;
         if (respText != "[]") {
           badgeText = "DA";
-          // Color taken from https://www.schemecolor.com/easy-to-use-colors.php
-          // Blueberry
-          badgeColor = '#427FED';
+          badgeColor = BadgeColorBlue;
         } else {
           badgeText = BadgeTextNA;
           badgeColor = BadgeColorNA;
@@ -79,10 +85,10 @@ export function verifyPage (title: string) {
       );
       // Update cookie
       if (tab.url) {
-        chrome.cookies.set({url: tab.url, name: "is_da_verified", value: verificationStatus.toString()});
+        chrome.cookies.set({url: tab.url, name: "is_da_verified", value: verificationStatus});
       }
       return verificationStatus;
     }
-    return false;
+    return "N/A";
   });
 }

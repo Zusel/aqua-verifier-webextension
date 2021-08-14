@@ -22,7 +22,7 @@ function doInitialVerification(tab: any, doVerify: boolean = false) {
             verifyPage(pageTitle);
           }
         } else {
-          setBadgeStatus(cookie.value === 'true');
+          setBadgeStatus(cookie.value.toString());
         }
       })
     });

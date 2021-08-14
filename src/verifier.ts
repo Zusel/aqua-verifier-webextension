@@ -58,6 +58,7 @@ export function setInitialBadge(urlObj: URL) {
         }
         chrome.browserAction.setBadgeBackgroundColor({color: badgeColor});
         chrome.browserAction.setBadgeText({ text: badgeText });
+        console.log("setInitialBadge", badgeText);
         resolve(badgeText != BadgeTextNA);
       });
       response.on('error', (e) => reject(false));
@@ -85,7 +86,7 @@ export function verifyPage (title: string) {
       );
       // Update cookie
       if (tab.url) {
-        chrome.cookies.set({url: tab.url, name: "is_da_verified", value: verificationStatus});
+        chrome.cookies.set({url: tab.url, name: title, value: verificationStatus});
       }
       return verificationStatus;
     }

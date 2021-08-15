@@ -13,7 +13,15 @@ const BadgeColorBlue = '#427FED';
 const apiURL = 'http://localhost:9352/rest.php/data_accounting/v1/standard';
 
 export function extractPageTitle(urlObj: URL | null) {
-  return urlObj ? urlObj.pathname.split('/').pop(): '';
+  if (!urlObj) {
+    return '';
+  }
+  const title = urlObj.pathname.split('/').pop();
+  // Convert from Mediawiki url title to page title.
+  // See https://www.mediawiki.org/wiki/Manual:PAGENAMEE_encoding
+  // TODO completely implement this. There are other characters that are
+  // converted, not just undescore.
+  return title ? title.replace(/_/g, ' ') : '';
 }
 
 export function setBadgeStatus(status: string) {

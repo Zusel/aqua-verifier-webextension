@@ -1,6 +1,7 @@
 import * as http from "http";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
+
 import { verifyPage, extractPageTitle } from "./verifier";
 
 const apiURL = 'http://localhost:9352/rest.php/data_accounting/v1/standard';
@@ -8,6 +9,7 @@ const apiURL = 'http://localhost:9352/rest.php/data_accounting/v1/standard';
 const Popup = () => {
   const [pageTitle, setPageTitle] = useState('');
   const [currentURL, setCurrentURL] = useState<string>();
+  const [verificationLog, setVerificationLog] = useState('');
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -28,11 +30,14 @@ const Popup = () => {
         <li>Current Page Title: {pageTitle}</li>
       </ul>
       <button
-        onClick={() => verifyPage(pageTitle)}
+        onClick={() => verifyPage(pageTitle, setVerificationLog)}
         style={{ marginRight: "5px" }}
       >
         Verify Page
       </button>
+      <br/>
+      <div dangerouslySetInnerHTML={{ __html: verificationLog}}>
+      </div>
     </>
   );
 };

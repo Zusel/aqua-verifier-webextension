@@ -1,7 +1,7 @@
 import * as http from "http";
 // Not yet typed
 // @ts-ignore
-import { verifyPage as externalVerifierVerifyPage } from "data-accounting-external-verifier";
+import { verifyPage as externalVerifierVerifyPage, formatRevisionInfo2HTML } from "data-accounting-external-verifier";
 
 export const BadgeTextNA = 'N/A';
 // Dark gray custom picked
@@ -83,12 +83,33 @@ export function setInitialBadge(urlObj: URL | null) {
   return promise;
 }
 
-export function verifyPage (title: string) {
+function logPageInfo(status: string, details: {verified_ids: string[], revision_details: object[]} | null, callback: Function) {
+  if (status === 'N/A' || !details) {
+    callback('');
+    return;
+  }
+  const verbose = false;
+  const _space2 = '&nbsp&nbsp';
+  let out = "";
+  out += 'Verified IDs:' + details.verified_ids.toString() + '<br>';
+  for (let i = 0; i < details.revision_details.length; i++) {
+    out += `${i + 1}. Verification of Revision ${details.verified_ids[i]}.<br>`;
+    out += formatRevisionInfo2HTML(details.revision_details[i], verbose) + "<br>";
+    const count = i + 1;
+    out += `${_space2}Validated revisions: ${count} / ${details.verified_ids.length} (${(100 * count / details.verified_ids.length).toFixed(1)}%)<br>`;
+    callback(out);
+  };
+}
+
+export function verifyPage (title: string, callback: Function | null = null) {
   chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
     const tab = tabs[0];
+    let verificationStatus = "N/A";
+    let details = null;
     if (tab.id) {
       chrome.browserAction.setBadgeText({ text: '⏳' });
-      const verificationStatus = await externalVerifierVerifyPage(title);
+      const verbose = false;
+      [verificationStatus, details] = await externalVerifierVerifyPage(title, verbose, false);
       chrome.browserAction.setBadgeText({ text: 'DA' });
       setBadgeStatus(verificationStatus)
       chrome.tabs.sendMessage(
@@ -104,8 +125,10 @@ export function verifyPage (title: string) {
       if (tab.url) {
         chrome.cookies.set({url: tab.url, name: title, value: verificationStatus});
       }
-      return verificationStatus;
     }
-    return "N/A";
+    if (callback) {
+      logPageInfo(verificationStatus, details, callback);
+    }
+    return;
   });
 }

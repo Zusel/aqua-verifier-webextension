@@ -26,17 +26,19 @@ const Popup = () => {
 
   return (
     <>
-      <ul style={{ minWidth: "700px" }}>
-        <li>Current Page Title: {pageTitle}</li>
-      </ul>
-      <button
-        onClick={() => verifyPage(pageTitle, setVerificationLog)}
-        style={{ marginRight: "5px" }}
-      >
-        Verify Page
-      </button>
-      <br/>
-      <div dangerouslySetInnerHTML={{ __html: verificationLog}}>
+      <div style={{ fontSize: "larger" }}>
+        <ul style={{ minWidth: "700px" }}>
+          <li>Current Page Title: {pageTitle}</li>
+        </ul>
+        <button
+          onClick={() => verifyPage(pageTitle, setVerificationLog)}
+          style={{ marginRight: "5px" }}
+        >
+          Verify Page
+        </button>
+        <br/>
+        <div dangerouslySetInnerHTML={{ __html: verificationLog}}>
+        </div>
       </div>
     </>
   );

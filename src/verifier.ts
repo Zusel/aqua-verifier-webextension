@@ -93,12 +93,14 @@ function logPageInfo(status: string, details: {verified_ids: string[], revision_
   let out = "";
   out += 'Verified IDs:' + details.verified_ids.toString() + '<br>';
   for (let i = 0; i < details.revision_details.length; i++) {
+    out += '<div>'
     out += `${i + 1}. Verification of Revision ${details.verified_ids[i]}.<br>`;
-    out += formatRevisionInfo2HTML(details.revision_details[i], verbose) + "<br>";
+    out += formatRevisionInfo2HTML(details.revision_details[i], verbose);
     const count = i + 1;
     out += `${_space2}Validated revisions: ${count} / ${details.verified_ids.length} (${(100 * count / details.verified_ids.length).toFixed(1)}%)<br>`;
-    callback(out);
+    out += '</div>'
   };
+  callback(out);
 }
 
 export function verifyPage (title: string, callback: Function | null = null) {

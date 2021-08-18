@@ -1,11 +1,7 @@
-import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, setBadgeStatus } from "./verifier";
+import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, setBadgeStatus, getUrlObj } from "./verifier";
 
 // https://stackoverflow.com/questions/60545285/how-to-use-onupdated-and-onactivated-simultanously
 const processingTabId: { [key: number]: boolean } = {};
-
-function getUrlObj(tab: any) {
-  return tab.url ? new URL(tab.url): null;
-}
 
 function doInitialVerification(tab: any, doVerify: boolean = false) {
   // processintTabId is necessary to prevent duplicate invocation of

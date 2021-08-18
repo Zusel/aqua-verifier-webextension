@@ -5,12 +5,16 @@ import { verifyPage as externalVerifierVerifyPage, formatRevisionInfo2HTML } fro
 
 export const BadgeTextNA = 'N/A';
 // Dark gray custom picked
-const BadgeColorNA = '#ABABAD';
+export const BadgeColorNA = '#ABABAD';
 // Color taken from https://www.schemecolor.com/easy-to-use-colors.php
 // Blueberry
 const BadgeColorBlue = '#427FED';
 
 const apiURL = 'http://localhost:9352/rest.php/data_accounting/v1/standard';
+
+export function getUrlObj(tab: any) {
+  return tab.url ? new URL(tab.url): null;
+}
 
 export function extractPageTitle(urlObj: URL | null) {
   if (!urlObj) {

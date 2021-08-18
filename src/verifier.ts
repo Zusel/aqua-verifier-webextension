@@ -101,7 +101,7 @@ function logPageInfo(status: string, details: {verified_ids: string[], revision_
     out += `${i + 1}. Verification of Revision ${details.verified_ids[i]}.<br>`;
     out += formatRevisionInfo2HTML(details.revision_details[i], verbose);
     const count = i + 1;
-    out += `${_space2}Validated revisions: ${count} / ${details.verified_ids.length} (${(100 * count / details.verified_ids.length).toFixed(1)}%)<br>`;
+    out += `${_space2}Progress: ${count} / ${details.verified_ids.length} (${(100 * count / details.verified_ids.length).toFixed(1)}%)<br>`;
     out += '</div>'
   };
   callback(out);

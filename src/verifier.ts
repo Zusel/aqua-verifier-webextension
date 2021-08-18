@@ -93,7 +93,11 @@ function logPageInfo(status: string, details: {verified_ids: string[], revision_
   let out = "";
   out += 'Verified IDs:' + details.verified_ids.toString() + '<br>';
   for (let i = 0; i < details.revision_details.length; i++) {
-    out += '<div>'
+    if (i % 2 == 0) {
+      out += '<div style="background: LightCyan;">'
+    } else {
+      out += '<div>'
+    }
     out += `${i + 1}. Verification of Revision ${details.verified_ids[i]}.<br>`;
     out += formatRevisionInfo2HTML(details.revision_details[i], verbose);
     const count = i + 1;

@@ -91,7 +91,7 @@ function logPageInfo(status: string, details: {verified_ids: string[], revision_
   const verbose = false;
   const _space2 = '&nbsp&nbsp';
   let out = "";
-  out += 'Verified IDs:' + details.verified_ids.toString() + '<br>';
+  out += 'Verified Page Revisions: ' + details.verified_ids.toString() + '<br>';
   for (let i = 0; i < details.revision_details.length; i++) {
     if (i % 2 == 0) {
       out += '<div style="background: LightCyan;">'

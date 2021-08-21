@@ -1,4 +1,4 @@
-import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, setBadgeStatus, getUrlObj } from "./verifier";
+import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, BadgeTextNORECORD, setBadgeStatus, getUrlObj } from "./verifier";
 
 // https://stackoverflow.com/questions/60545285/how-to-use-onupdated-and-onactivated-simultanously
 const processingTabId: { [key: number]: boolean } = {};
@@ -18,6 +18,13 @@ function doInitialVerification(tab: any, doVerify: boolean = false) {
       }
       const pageTitle = extractPageTitle(urlObj);
       if (!pageTitle) {
+        delete processingTabId[tab.id];
+        return;
+      }
+      if (badgeText === BadgeTextNORECORD) {
+        if (tab.url) {
+          chrome.cookies.set({url: tab.url, name: pageTitle, value: 'NORECORD'});
+        }
         delete processingTabId[tab.id];
         return;
       }

@@ -2,7 +2,7 @@ import * as http from "http";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 
-import { verifyPage, extractPageTitle, BadgeColorNA, getUrlObj } from "./verifier";
+import { verifyPage, extractPageTitle, BadgeColorNA, BadgeColorBlue, getUrlObj } from "./verifier";
 
 const apiURL = 'http://localhost:9352/rest.php/data_accounting/v1/standard';
 
@@ -13,7 +13,8 @@ const verificationStatusMap: { [key: string]: string } = {
   'VERIFIED': '<div style="color: #65B045; font-size: larger;">Page integrity validated</div> Information on this page has not been tampered with.',
   // Fire Engine Red
   'INVALID': '<div style="color: #FF0018; font-size: larger;">Page integrity verification failed</div> Information on this page can\'t be trusted.',
-  'N/A': '<div style="color: ' + BadgeColorNA + '; font-size: larger;">Page has no verification data</div> Information on this page might have been tampered.',
+  'NORECORD': '<div style="color: ' + BadgeColorBlue + '; font-size: larger;">Data accounting supported but no record available</div> Information on this page might have been tampered.',
+  'N/A': '<div style="color: ' + BadgeColorNA + '; font-size: larger;">No record available</div> Information on this page might have been tampered.',
 }
 
 const Popup = () => {

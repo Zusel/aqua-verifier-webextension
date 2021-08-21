@@ -6,9 +6,10 @@ import { verifyPage as externalVerifierVerifyPage, formatRevisionInfo2HTML } fro
 export const BadgeTextNA = 'N/A';
 // Dark gray custom picked
 export const BadgeColorNA = '#ABABAD';
+export const BadgeTextNORECORD = 'NR';
 // Color taken from https://www.schemecolor.com/easy-to-use-colors.php
 // Blueberry
-const BadgeColorBlue = '#427FED';
+export const BadgeColorBlue = '#427FED';
 
 const apiURL = 'http://localhost:9352/rest.php/data_accounting/v1/standard';
 
@@ -39,7 +40,7 @@ export function setBadgeStatus(status: string) {
     // From https://www.schemecolor.com/no-news-is-good.php
     // Fire Engine Red
     badgeColor = '#FF0018';
-  } else if (status === 'N/A') {
+  } else if (status === 'NORECORD') {
     badgeColor = BadgeColorBlue;
   } else {
     // Something wrong is happening
@@ -56,12 +57,13 @@ function setBadgeNA() {
 export function setInitialBadge(urlObj: URL | null) {
   if (!urlObj) {
     setBadgeNA();
-    return Promise.resolve(false);
+    return Promise.resolve('N/A');
   }
   const extractedPageTitle = extractPageTitle(urlObj);
+  // TODO don't hardcode to localhost
   if (urlObj.hostname != "localhost") {
     setBadgeNA();
-    return Promise.resolve(false);
+    return Promise.resolve('N/A');
   }
   const urlForChecking = `${apiURL}/get_page_last_rev?var1=${extractedPageTitle}`;
   const promise = new Promise((resolve, reject) => {
@@ -69,25 +71,29 @@ export function setInitialBadge(urlObj: URL | null) {
       response.on('data', (data) => {
         const respText = data.toString();
         let badgeText, badgeColor;
-        if (respText != "[]") {
+        if (respText != "{}") {
           badgeText = "DA";
           badgeColor = BadgeColorBlue;
         } else {
-          badgeText = BadgeTextNA;
-          badgeColor = BadgeColorNA;
+          badgeText = BadgeTextNORECORD;
+          badgeColor = BadgeColorBlue;
         }
         chrome.browserAction.setBadgeBackgroundColor({color: badgeColor});
         chrome.browserAction.setBadgeText({ text: badgeText });
         console.log("setInitialBadge", badgeText);
-        resolve(badgeText != BadgeTextNA);
+        resolve(badgeText);
       });
-      response.on('error', (e) => reject(false));
+      response.on('error', (e) => reject('ERROR'));
     });
   });
   return promise;
 }
 
 function logPageInfo(status: string, details: {verified_ids: string[], revision_details: object[]} | null, callback: Function) {
+  if (status === 'NORECORD') {
+    callback('No revision record');
+    return;
+  }
   if (status === 'N/A' || !details) {
     callback('');
     return;
@@ -120,7 +126,7 @@ export function verifyPage (title: string, callback: Function | null = null) {
       chrome.browserAction.setBadgeText({ text: '⏳' });
       const verbose = false;
       [verificationStatus, details] = await externalVerifierVerifyPage(title, verbose, false);
-      chrome.browserAction.setBadgeText({ text: 'DA' });
+      chrome.browserAction.setBadgeText({ text: verificationStatus === 'NORECORD' ? 'NR' : 'DA' });
       setBadgeStatus(verificationStatus)
       chrome.tabs.sendMessage(
         tab.id as number,

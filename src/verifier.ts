@@ -30,26 +30,32 @@ export function extractPageTitle(urlObj: URL | null) {
 }
 
 export function setBadgeStatus(status: string) {
-  let badgeColor;
+  let badgeColor, badgeText;
   if (status === 'VERIFIED') {
     // From https://www.schemecolor.com/easy-to-use-colors.php
     // Apple
     // (actually it is greenish in color, not red)
     badgeColor = '#65B045';
+    badgeText = 'DA';
   } else if (status === 'INVALID') {
     // From https://www.schemecolor.com/no-news-is-good.php
     // Fire Engine Red
     badgeColor = '#FF0018';
+    badgeText = 'DA';
   } else if (status === 'NORECORD') {
     badgeColor = BadgeColorBlue;
+    badgeText = 'NR';
   } else {
+    console.log(`UGH!!! ${status}`)
     // Something wrong is happening
     badgeColor = 'black';
+    badgeText = '??';
   }
   chrome.browserAction.setBadgeBackgroundColor({color: badgeColor});
+  chrome.browserAction.setBadgeText({ text: badgeText });
 }
 
-function setBadgeNA() {
+export function setBadgeNA() {
   chrome.browserAction.setBadgeBackgroundColor({color: BadgeColorNA});
   chrome.browserAction.setBadgeText({ text: BadgeTextNA });
 }
@@ -116,7 +122,7 @@ function logPageInfo(status: string, details: {verified_ids: string[], revision_
   callback(out);
 }
 
-export function verifyPage (title: string, callback: Function | null = null) {
+export function verifyPage(title: string, callback: Function | null = null) {
   chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
     const tab = tabs[0];
     let verificationStatus = "N/A";

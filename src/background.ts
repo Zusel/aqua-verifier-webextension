@@ -1,4 +1,4 @@
-import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, BadgeTextNORECORD, setBadgeStatus, getUrlObj } from "./verifier";
+import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, BadgeTextNORECORD, setBadgeStatus, getUrlObj, setBadgeNA } from "./verifier";
 
 // https://stackoverflow.com/questions/60545285/how-to-use-onupdated-and-onactivated-simultanously
 const processingTabId: { [key: number]: boolean } = {};
@@ -9,33 +9,39 @@ function doInitialVerification(tab: any) {
   if (processingTabId[tab.id]) return;
   processingTabId[tab.id] = true;
   const urlObj = getUrlObj(tab);
-  setInitialBadge(urlObj)
-  .then((badgeText) => {
-    if (badgeText === BadgeTextNA) {
-      delete processingTabId[tab.id];
-      return;
-    }
-    const pageTitle = extractPageTitle(urlObj);
-    if (!pageTitle) {
-      delete processingTabId[tab.id];
-      return;
-    }
-    if (badgeText === BadgeTextNORECORD) {
-      if (tab.url) {
-        chrome.cookies.set({url: tab.url, name: pageTitle, value: 'NORECORD'});
-      }
-      delete processingTabId[tab.id];
-      return;
-    }
-    chrome.cookies.get({url: tab.url, name: pageTitle}, (cookie) => {
-      console.log("doInitialVerification, cookie", cookie ? cookie.value : cookie, pageTitle);
-      if (cookie === null) {
+
+  const pageTitle = extractPageTitle(urlObj);
+  if (!pageTitle || !tab.url) {
+    setBadgeNA();
+    delete processingTabId[tab.id];
+    return;
+  }
+
+  chrome.cookies.get({url: tab.url, name: pageTitle}, (cookie) => {
+    console.log("doInitialVerification, cookie", cookie ? cookie.value : cookie, pageTitle);
+    if (cookie === null) {
+      setInitialBadge(urlObj)
+      .then((badgeText) => {
+        if (badgeText === BadgeTextNA) {
+          delete processingTabId[tab.id];
+          return;
+        }
+
+        if (badgeText === BadgeTextNORECORD) {
+          if (tab.url) {
+            chrome.cookies.set({url: tab.url, name: pageTitle, value: 'NORECORD'});
+          }
+          delete processingTabId[tab.id];
+          return;
+        }
+
         verifyPage(pageTitle);
-      } else {
-        setBadgeStatus(cookie.value.toString());
-      }
+        delete processingTabId[tab.id];
+      });
+    } else {
+      setBadgeStatus(cookie.value.toString());
       delete processingTabId[tab.id];
-    })
+    }
   });
 }
 

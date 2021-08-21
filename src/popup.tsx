@@ -43,6 +43,13 @@ const Popup = () => {
         const verificationStatusMessage = verificationStatusMap[badgeStatus] || somethingBadHappened;
         setVerificationStatus(verificationStatusMessage);
       });
+      const sanitizedUrl = tab.url.split('?')[0];
+      chrome.storage.sync.get(sanitizedUrl, (data) => {
+        if (!data[sanitizedUrl]) {
+          return;
+        }
+        setVerificationLog(data[sanitizedUrl]);
+      });
     });
   }, []);
 

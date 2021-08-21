@@ -142,9 +142,18 @@ export function verifyPage(title: string, callback: Function | null = null) {
           console.log("result message:", msg);
         }
       );
-      // Update cookie
       if (tab.url) {
+        // Update cookie
         chrome.cookies.set({url: tab.url, name: title, value: verificationStatus});
+        // Cache verification detail in local storage
+        logPageInfo(verificationStatus, details, (info: string) => {
+          if (tab.url) {
+            const sanitizedUrl = tab.url.split('?')[0];
+            chrome.storage.sync.set(
+              {[sanitizedUrl]: info}
+            );
+          }
+        })
       }
     }
     if (callback) {

@@ -10,36 +10,34 @@ function doInitialVerification(tab: any, doVerify: boolean = false) {
   processingTabId[tab.id] = true;
   const urlObj = getUrlObj(tab);
   setInitialBadge(urlObj)
-  .then(() => {
-    chrome.browserAction.getBadgeText({}, (badgeText) => {
-      if (badgeText === BadgeTextNA) {
-        delete processingTabId[tab.id];
-        return;
+  .then((badgeText) => {
+    if (badgeText === BadgeTextNA) {
+      delete processingTabId[tab.id];
+      return;
+    }
+    const pageTitle = extractPageTitle(urlObj);
+    if (!pageTitle) {
+      delete processingTabId[tab.id];
+      return;
+    }
+    if (badgeText === BadgeTextNORECORD) {
+      if (tab.url) {
+        chrome.cookies.set({url: tab.url, name: pageTitle, value: 'NORECORD'});
       }
-      const pageTitle = extractPageTitle(urlObj);
-      if (!pageTitle) {
-        delete processingTabId[tab.id];
-        return;
-      }
-      if (badgeText === BadgeTextNORECORD) {
-        if (tab.url) {
-          chrome.cookies.set({url: tab.url, name: pageTitle, value: 'NORECORD'});
+      delete processingTabId[tab.id];
+      return;
+    }
+    chrome.cookies.get({url: tab.url, name: pageTitle}, (cookie) => {
+      console.log("doInitialVerification, cookie", cookie ? cookie.value : cookie, pageTitle);
+      if (cookie === null) {
+        if (doVerify) {
+          verifyPage(pageTitle);
         }
-        delete processingTabId[tab.id];
-        return;
+      } else {
+        setBadgeStatus(cookie.value.toString());
       }
-      chrome.cookies.get({url: tab.url, name: pageTitle}, (cookie) => {
-        console.log("doInitialVerification, cookie", cookie ? cookie.value : cookie, pageTitle);
-        if (cookie === null) {
-          if (doVerify) {
-            verifyPage(pageTitle);
-          }
-        } else {
-          setBadgeStatus(cookie.value.toString());
-        }
-        delete processingTabId[tab.id];
-      })
-    });
+      delete processingTabId[tab.id];
+    })
   });
 }
 

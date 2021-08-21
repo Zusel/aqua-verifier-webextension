@@ -57,13 +57,13 @@ function setBadgeNA() {
 export function setInitialBadge(urlObj: URL | null) {
   if (!urlObj) {
     setBadgeNA();
-    return Promise.resolve('N/A');
+    return Promise.resolve(BadgeTextNA);
   }
   const extractedPageTitle = extractPageTitle(urlObj);
   // TODO don't hardcode to localhost
   if (urlObj.hostname != "localhost") {
     setBadgeNA();
-    return Promise.resolve('N/A');
+    return Promise.resolve(BadgeTextNA);
   }
   const urlForChecking = `${apiURL}/get_page_last_rev?var1=${extractedPageTitle}`;
   const promise = new Promise((resolve, reject) => {

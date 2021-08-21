@@ -41,6 +41,15 @@ function doInitialVerification(tab: any, doVerify: boolean = false) {
   });
 }
 
+function runIfTabIsActive(tab: any, callback: Function) {
+  chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
+    const activeTab = tabs[0];
+    if (tab === activeTab) {
+      callback();
+    }
+  });
+}
+
 chrome.tabs.onActivated.addListener((info) => {
   chrome.tabs.get(info.tabId, function(tab) {
     doInitialVerification(tab);
@@ -51,9 +60,13 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status !== "complete") {
     return;
   }
-  doInitialVerification(tab, true);
+  runIfTabIsActive(tab, () => {
+    doInitialVerification(tab, true);
+  });
 });
 
 chrome.tabs.onCreated.addListener((tab) => {
-  doInitialVerification(tab, true);
+  runIfTabIsActive(tab, () => {
+    doInitialVerification(tab, true);
+  });
 });

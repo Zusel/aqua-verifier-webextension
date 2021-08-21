@@ -3,7 +3,7 @@ import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, BadgeTextNO
 // https://stackoverflow.com/questions/60545285/how-to-use-onupdated-and-onactivated-simultanously
 const processingTabId: { [key: number]: boolean } = {};
 
-function doInitialVerification(tab: any, doVerify: boolean = false) {
+function doInitialVerification(tab: any) {
   // processintTabId is necessary to prevent duplicate invocation of
   // doInitialVerification by the chrome listeners.
   if (processingTabId[tab.id]) return;
@@ -30,9 +30,7 @@ function doInitialVerification(tab: any, doVerify: boolean = false) {
     chrome.cookies.get({url: tab.url, name: pageTitle}, (cookie) => {
       console.log("doInitialVerification, cookie", cookie ? cookie.value : cookie, pageTitle);
       if (cookie === null) {
-        if (doVerify) {
-          verifyPage(pageTitle);
-        }
+        verifyPage(pageTitle);
       } else {
         setBadgeStatus(cookie.value.toString());
       }
@@ -61,12 +59,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     return;
   }
   runIfTabIsActive(tab, () => {
-    doInitialVerification(tab, true);
+    doInitialVerification(tab);
   });
 });
 
 chrome.tabs.onCreated.addListener((tab) => {
   runIfTabIsActive(tab, () => {
-    doInitialVerification(tab, true);
+    doInitialVerification(tab);
   });
 });

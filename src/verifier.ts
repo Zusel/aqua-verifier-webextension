@@ -73,11 +73,10 @@ export function setInitialBadge(urlObj: URL | null) {
         let badgeText, badgeColor;
         if (respText != "{}") {
           badgeText = "DA";
-          badgeColor = BadgeColorBlue;
         } else {
           badgeText = BadgeTextNORECORD;
-          badgeColor = BadgeColorBlue;
         }
+        badgeColor = BadgeColorBlue;
         chrome.browserAction.setBadgeBackgroundColor({color: badgeColor});
         chrome.browserAction.setBadgeText({ text: badgeText });
         console.log("setInitialBadge", badgeText);

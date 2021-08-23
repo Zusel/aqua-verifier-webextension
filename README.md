@@ -53,8 +53,8 @@ npm run watch
 ```
 
 ## Load extension to chrome
-
-Load `dist` directory
+Go to chrome://extensions and enable 'Developer Mode' on the upper right corner.
+Now you can load `dist` directory of our local extension, after you completed the build process.
 
 ## Test
 `npx jest` or `npm run test`

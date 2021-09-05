@@ -18,6 +18,9 @@ export function getUrlObj(tab: any) {
 }
 
 export function extractPageTitle(urlObj: URL | null) {
+  // If you update this function, make sure to sync with the same function in
+  // the DataAccounting repo, in
+  // modules/ext.DataAccounting.signMessage/index.js.
   if (!urlObj) {
     return '';
   }

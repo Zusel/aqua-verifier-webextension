@@ -58,11 +58,10 @@ const Popup = () => {
       <div style={{ fontSize: "larger" }}>
         <button
           onClick={() => verifyPage(pageTitle, setVerificationLog)}
-          style={{ marginLeft: "89%" }}
+          style={{ float: "right" }}
         >
           Verify Page
         </button>
-        <br/>
         <div dangerouslySetInnerHTML={{ __html: verificationStatus}}>
         </div>
         <ul style={{ minWidth: "700px" }}>

@@ -150,31 +150,29 @@ export function verifyPage(title: string, callback: Function | null = null) {
         }
       );
       if (tab.url) {
+        const sanitizedUrl = tab.url.split('?')[0];
         // Update cookie
-        chrome.cookies.set({url: tab.url, name: title, value: verificationStatus});
+        chrome.cookies.set({url: sanitizedUrl, name: title, value: verificationStatus});
         // Cache verification detail in local storage
         logPageInfo(verificationStatus, details, (info: string) => {
-          if (tab.url) {
-            const sanitizedUrl = tab.url.split('?')[0];
-            chrome.storage.sync.set(
-              {[sanitizedUrl]: info}
-            );
-            // Also store the last verification hash and rev id
-            // We use this info to check if the page has been updated since we
-            // last verify it. If so, we rerun the verification process
-            // automatically.
-            if (!details || !details.revision_details) {
-              return;
-            }
-            const lastDetail = details.revision_details[details.revision_details.length - 1];
-            const HashId = {
-              rev_id: lastDetail.rev_id,
-              verification_hash: lastDetail.verification_hash,
-            };
-            chrome.storage.sync.set(
-              {["verification_hash_id_" + sanitizedUrl]: JSON.stringify(HashId)}
-            );
+          chrome.storage.sync.set(
+            {[sanitizedUrl]: info}
+          );
+          // Also store the last verification hash and rev id
+          // We use this info to check if the page has been updated since we
+          // last verify it. If so, we rerun the verification process
+          // automatically.
+          if (!details || !details.revision_details) {
+            return;
           }
+          const lastDetail = details.revision_details[details.revision_details.length - 1];
+          const HashId = {
+            rev_id: lastDetail.rev_id,
+            verification_hash: lastDetail.verification_hash,
+          };
+          chrome.storage.sync.set(
+            {["verification_hash_id_" + sanitizedUrl]: JSON.stringify(HashId)}
+          );
         })
       }
     }

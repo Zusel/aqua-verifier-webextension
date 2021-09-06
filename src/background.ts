@@ -17,7 +17,12 @@ function doInitialVerification(tab: any, doCheckCache: boolean = true) {
     return;
   }
 
-  chrome.cookies.get({url: tab.url, name: pageTitle}, (cookie) => {
+  if (!tab.url) {
+    return;
+  }
+  const sanitizedUrl = tab.url.split('?')[0];
+
+  chrome.cookies.get({url: sanitizedUrl, name: pageTitle}, (cookie) => {
     console.log("doInitialVerification, cookie", cookie ? cookie.value : cookie, pageTitle);
     function doVerifyFromScratch() {
       setInitialBadge(urlObj)
@@ -28,9 +33,10 @@ function doInitialVerification(tab: any, doCheckCache: boolean = true) {
         }
 
         if (badgeText === BadgeTextNORECORD) {
-          if (tab.url) {
-            chrome.cookies.set({url: tab.url, name: pageTitle, value: 'NORECORD'});
-          }
+          chrome.cookies.set({url: sanitizedUrl, name: pageTitle, value: 'NORECORD'});
+          // Delete sync storage if previous data exist
+          chrome.storage.sync.remove(sanitizedUrl);
+          chrome.storage.sync.remove("verification_hash_id_" + sanitizedUrl);
           delete processingTabId[tab.id];
           return;
         }

@@ -38,7 +38,7 @@ const Popup = () => {
       }
       setPageTitle(extractedPageTitle);
       chrome.cookies.get({url: tab.url, name: extractedPageTitle}, (cookie: any) => {
-        const badgeStatus = cookie.value.toString() || '';
+        const badgeStatus = (!!cookie && cookie.value.toString()) || 'N/A';
         const somethingBadHappened = '<div style="color: Black; font-size: larger;">Unknown error</div> Unexpected badge status: ' + badgeStatus;
         const verificationStatusMessage = verificationStatusMap[badgeStatus] || somethingBadHappened;
         setVerificationStatus(verificationStatusMessage);

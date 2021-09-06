@@ -13,6 +13,10 @@ export const BadgeColorBlue = '#427FED';
 
 const apiURL = 'http://localhost:9352/rest.php/data_accounting/v1/standard';
 
+function isEmpty(obj: any) {
+  return Object.keys(obj).length === 0;
+}
+
 export function getUrlObj(tab: any) {
   return tab.url ? new URL(tab.url): null;
 }
@@ -193,8 +197,22 @@ export function checkIfCacheIsUpToDate(pageTitle: string, sanitizedUrl: string, 
           if (d[key]) {
             const expected = JSON.parse(d[key]);
             isUpToDate = (expected.rev_id === actual.rev_id) && (expected.verification_hash === actual.verification_hash);
+            if (isEmpty(actual)) {
+              // This is a corner case.
+              // If the actual page has the verification info removed, but the
+              // local storage has the old version with non empty verification
+              // remove, we then remove it from local storage.
+              chrome.storage.sync.remove(sanitizedUrl, () => {
+                chrome.storage.sync.remove(key, () => {
+                  callback(isUpToDate)
+                })
+              })
+            } else {
+              callback(isUpToDate)
+            }
+          } else {
+            callback(isUpToDate)
           }
-          callback(isUpToDate)
         });
       });
       response.on('error', (e) => {throw e});

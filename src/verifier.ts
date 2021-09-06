@@ -129,7 +129,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
   chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
     const tab = tabs[0];
     let verificationStatus = "N/A";
-    let details = null;
+    let details: { verified_ids: string[]; revision_details: any[]; } | null = null;
     if (tab.id) {
       chrome.browserAction.setBadgeText({ text: '⏳' });
       const verbose = false;
@@ -155,6 +155,21 @@ export function verifyPage(title: string, callback: Function | null = null) {
             chrome.storage.sync.set(
               {[sanitizedUrl]: info}
             );
+            // Also store the last verification hash and rev id
+            // We use this info to check if the page has been updated since we
+            // last verify it. If so, we rerun the verification process
+            // automatically.
+            if (!details || !details.revision_details) {
+              return;
+            }
+            const lastDetail = details.revision_details[details.revision_details.length - 1];
+            const HashId = {
+              rev_id: lastDetail.rev_id,
+              verification_hash: lastDetail.verification_hash,
+            };
+            chrome.storage.sync.set(
+              {["verification_hash_id_" + sanitizedUrl]: JSON.stringify(HashId)}
+            );
           }
         })
       }
@@ -163,5 +178,25 @@ export function verifyPage(title: string, callback: Function | null = null) {
       logPageInfo(verificationStatus, details, callback);
     }
     return;
+  });
+}
+
+export function checkIfCacheIsUpToDate(pageTitle: string, sanitizedUrl: string, callback: Function) {
+  // Check if our stored verification info is outdated
+  const urlForChecking = `${apiURL}/get_page_last_rev?var1=${pageTitle}`;
+  http.get(urlForChecking, (response) => {
+      response.on('data', (data) => {
+        const actual = JSON.parse(data);
+        const key = "verification_hash_id_" + sanitizedUrl
+        chrome.storage.sync.get(key, (d) => {
+          let isUpToDate = false;
+          if (d[key]) {
+            const expected = JSON.parse(d[key]);
+            isUpToDate = (expected.rev_id === actual.rev_id) && (expected.verification_hash === actual.verification_hash);
+          }
+          callback(isUpToDate)
+        });
+      });
+      response.on('error', (e) => {throw e});
   });
 }

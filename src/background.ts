@@ -69,7 +69,7 @@ function doInitialVerification(tab: any, doCheckCache: boolean = true) {
 function runIfTabIsActive(tab: any, callback: Function) {
   chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
     const activeTab = tabs[0];
-    if (tab === activeTab) {
+    if (tab.id === activeTab.id) {
       callback();
     }
   });

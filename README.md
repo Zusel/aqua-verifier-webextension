@@ -1,8 +1,12 @@
 # VerifyPage
+This is a verification client for the micro-pkc https://github.com/FantasticoFox/VerifyPage
+it uses the CLI verification tool as an external dependency https://github.com/FantasticoFox/data-accounting-external-verifier
 
 ![build](https://github.com/chibat/chrome-extension-typescript-starter/workflows/build/badge.svg)
 
-Chrome Extension, TypeScript
+Chrome Extension, TypeScript, HTML
+
+
 
 ## Prerequisites
 
@@ -34,10 +38,6 @@ Chrome Extension, TypeScript
 npm install
 ```
 
-## Import as Visual Studio Code project
-
-...
-
 ## Build
 
 ```
@@ -55,6 +55,8 @@ npm run watch
 ## Load extension to chrome
 Go to chrome://extensions and enable 'Developer Mode' on the upper right corner.
 Now you can load `dist` directory of our local extension, after you completed the build process.
+
+You can also load a pre-build version of the extension.
 
 ## Test
 `npx jest` or `npm run test`

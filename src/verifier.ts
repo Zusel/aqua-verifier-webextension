@@ -31,12 +31,19 @@ export function extractPageTitle(urlObj: URL | null) {
   if (!urlObj) {
     return '';
   }
-  const title = urlObj.pathname.split('/').pop();
+  const titleUrlform = urlObj.pathname.split('/').pop();
+  if (!titleUrlform) {
+    return '';
+  }
   // Convert from Mediawiki url title to page title.
   // See https://www.mediawiki.org/wiki/Manual:PAGENAMEE_encoding
-  // TODO completely implement this. There are other characters that are
-  // converted, not just undescore.
-  return title ? title.replace(/_/g, ' ') : '';
+  // If you look at the source code of MediaWiki, in the file Title.php, in the method `makeTitle`, you will notice that there are multiple representations of a page title:
+  // - mTextform: text form with spaces
+  // - mDbkeyform: text form with underscores
+  // - mUrlform: url encoded text form with underscores
+  // We weant to return the mTextform.
+  const titleDbkeyform = decodeURIComponent(titleUrlform);
+  return titleDbkeyform.replace(/_/g, ' ');
 }
 
 export function setBadgeStatus(status: string) {

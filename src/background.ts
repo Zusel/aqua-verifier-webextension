@@ -12,7 +12,7 @@ function doInitialVerification(tab: any, doCheckCache: boolean = true) {
 
   const pageTitle = extractPageTitle(urlObj);
   if (!pageTitle || !tab.url) {
-    setBadgeNA();
+    setBadgeNA(tab.id);
     delete processingTabId[tab.id];
     return;
   }
@@ -47,7 +47,7 @@ function doInitialVerification(tab: any, doCheckCache: boolean = true) {
       doVerifyFromScratch()
     } else {
       if (!doCheckCache) {
-        setBadgeStatus(cookie.value.toString());
+        setBadgeStatus(tab.id, cookie.value.toString());
         delete processingTabId[tab.id];
         return
       }
@@ -55,7 +55,7 @@ function doInitialVerification(tab: any, doCheckCache: boolean = true) {
       const sanitizedUrl = tab.url.split('?')[0];
       checkIfCacheIsUpToDate(tab.id, pageTitle, sanitizedUrl, (isUpToDate: boolean) => {
         if (isUpToDate) {
-          setBadgeStatus(cookie.value.toString());
+          setBadgeStatus(tab.id, cookie.value.toString());
           delete processingTabId[tab.id];
         } else {
           // TODO checkIfCacheIsUpToDate already makes an API call

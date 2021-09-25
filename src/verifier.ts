@@ -46,7 +46,7 @@ export function extractPageTitle(urlObj: URL | null) {
   return titleDbkeyform.replace(/_/g, ' ');
 }
 
-export function setBadgeStatus(status: string) {
+export function setBadgeStatus(tabId: number, status: string) {
   let badgeColor, badgeText;
   if (status === 'VERIFIED') {
     // From https://www.schemecolor.com/easy-to-use-colors.php
@@ -68,13 +68,13 @@ export function setBadgeStatus(status: string) {
     badgeColor = 'black';
     badgeText = '??';
   }
-  chrome.action.setBadgeBackgroundColor({color: badgeColor});
-  chrome.action.setBadgeText({ text: badgeText });
+  chrome.action.setBadgeBackgroundColor({tabId: tabId, color: badgeColor});
+  chrome.action.setBadgeText({tabId: tabId, text: badgeText });
 }
 
-export function setBadgeNA() {
-  chrome.action.setBadgeBackgroundColor({color: BadgeColorNA});
-  chrome.action.setBadgeText({ text: BadgeTextNA });
+export function setBadgeNA(tabId: number) {
+  chrome.action.setBadgeBackgroundColor({tabId: tabId, color: BadgeColorNA});
+  chrome.action.setBadgeText({ tabId: tabId, text: BadgeTextNA });
 }
 
 /**
@@ -97,13 +97,13 @@ function getDAMeta(tabId: number) {
 
 export async function setInitialBadge(tabId: number, urlObj: URL | null) {
   if (!urlObj) {
-    setBadgeNA();
+    setBadgeNA(tabId);
     return Promise.resolve(BadgeTextNA);
   }
   const extractedPageTitle = extractPageTitle(urlObj);
   const serverUrl = await getDAMeta(tabId);
   if (!serverUrl) {
-    setBadgeNA();
+    setBadgeNA(tabId);
     return Promise.resolve(BadgeTextNA);
   }
   const urlForChecking = `${serverUrl}/rest.php/data_accounting/v1/standard/get_page_last_rev?var1=${extractedPageTitle}`;
@@ -118,8 +118,8 @@ export async function setInitialBadge(tabId: number, urlObj: URL | null) {
           badgeText = BadgeTextNORECORD;
         }
         badgeColor = BadgeColorBlue;
-        chrome.action.setBadgeBackgroundColor({color: badgeColor});
-        chrome.action.setBadgeText({ text: badgeText });
+        chrome.action.setBadgeBackgroundColor({tabId: tabId, color: badgeColor});
+        chrome.action.setBadgeText({tabId: tabId, text: badgeText });
         console.log("setInitialBadge", badgeText);
         resolve(badgeText);
       });
@@ -163,15 +163,15 @@ export function verifyPage(title: string, callback: Function | null = null) {
     let verificationStatus = "N/A";
     let details: { verified_ids: string[]; revision_details: any[]; } | null = null;
     if (tab.id) {
-      chrome.action.setBadgeText({ text: '⏳' });
+      chrome.action.setBadgeText({tabId: tab.id, text: '⏳' });
       const verbose = false;
       const serverUrl = await getDAMeta(tab.id);
       if (!serverUrl) {
-        chrome.action.setBadgeText({ text: 'NR' });
+        chrome.action.setBadgeText({tabId: tab.id, text: 'NR' });
         return;
       }
       [verificationStatus, details] = await externalVerifierVerifyPage(title, serverUrl, verbose, false);
-      setBadgeStatus(verificationStatus)
+      setBadgeStatus(tab.id, verificationStatus)
       if (tab.url) {
         const sanitizedUrl = tab.url.split('?')[0];
         // Update cookie

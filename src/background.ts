@@ -19,7 +19,7 @@ function doInitialVerification(tab: any, doCheckCache: boolean = true) {
 
   const sanitizedUrl = tab.url.split('?')[0];
 
-  chrome.cookies.get({url: sanitizedUrl, name: pageTitle}, (cookie) => {
+  chrome.cookies.get({url: sanitizedUrl, name: pageTitle}).then((cookie) => {
     console.log("doInitialVerification, cookie", cookie ? cookie.value : cookie, pageTitle);
     async function doVerifyFromScratch() {
       await setInitialBadge(tab.id, urlObj)

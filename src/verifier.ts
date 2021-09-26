@@ -77,22 +77,26 @@ export function setBadgeNA(tabId: number) {
   chrome.action.setBadgeText({ tabId: tabId, text: BadgeTextNA });
 }
 
-/**
- * Promise wrapper for chrome.tabs.sendMessage
- * @param tabId
- * @param item
- * @returns {Promise<any>}
- */
-function sendMessagePromise(tabId: number, item: any): Promise<string | null> {
+function getDAMeta(tabId: number): Promise<string | null> {
   return new Promise((resolve, reject) => {
-    chrome.tabs.sendMessage(tabId, item, (msg: string | null) => {
-      resolve(msg);
-    });
+    chrome.scripting.executeScript(
+      {
+        target: {tabId: tabId},
+        func: () => {
+          const DAMeta = document.querySelector('meta[name="data-accounting-mediawiki"]');
+          if (DAMeta && DAMeta instanceof HTMLMetaElement) {
+            return DAMeta.content;
+          } else {
+            return null;
+          }
+        },
+      },
+      (injectionResults) => {
+        const result = injectionResults[0].result;
+        resolve(result === 'null' ? null : result);
+      }
+    );
   });
-}
-
-function getDAMeta(tabId: number) {
-  return sendMessagePromise(tabId, {check_da: true});
 }
 
 export async function setInitialBadge(tabId: number, urlObj: URL | null) {

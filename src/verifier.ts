@@ -133,7 +133,7 @@ export async function setInitialBadge(tabId: number, urlObj: URL | null) {
   return promise;
 }
 
-function logPageInfo(status: string, details: {verified_ids: string[], revision_details: object[]} | null, callback: Function) {
+function logPageInfo(serverUrl: string, title:string, status: string, details: {verified_ids: string[], revision_details: object[]} | null, callback: Function) {
   if (status === 'NORECORD') {
     callback('No revision record');
     return;
@@ -152,7 +152,9 @@ function logPageInfo(status: string, details: {verified_ids: string[], revision_
     } else {
       out += '<div>'
     }
-    out += `${i + 1}. Verification of Revision ${details.verified_ids[i]}.<br>`;
+    const revid = details.verified_ids[i]
+    const revidURL = `${serverUrl}/index.php?title=${title}&oldid=${revid}`
+    out += `${i + 1}. Verification of <a href='${revidURL}'>Revision ID ${revid}<a>.<br>`;
     out += formatRevisionInfo2HTML(details.revision_details[i], verbose);
     const count = i + 1;
     out += `${_space2}Progress: ${count} / ${details.verified_ids.length} (${(100 * count / details.verified_ids.length).toFixed(1)}%)<br>`;
@@ -166,10 +168,11 @@ export function verifyPage(title: string, callback: Function | null = null) {
     const tab = tabs[0];
     let verificationStatus = "N/A";
     let details: { verified_ids: string[]; revision_details: any[]; } | null = null;
+    let serverUrl: string | null = "N/A";
     if (tab.id) {
       chrome.action.setBadgeText({tabId: tab.id, text: '⏳' });
       const verbose = false;
-      const serverUrl = await getDAMeta(tab.id);
+      serverUrl = await getDAMeta(tab.id);
       if (!serverUrl) {
         chrome.action.setBadgeText({tabId: tab.id, text: 'NR' });
         return;
@@ -181,7 +184,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
         // Update cookie
         chrome.cookies.set({url: sanitizedUrl, name: title, value: verificationStatus});
         // Cache verification detail in local storage
-        logPageInfo(verificationStatus, details, (info: string) => {
+        logPageInfo(serverUrl, title, verificationStatus, details, (info: string) => {
           chrome.storage.sync.set(
             {[sanitizedUrl]: info}
           );
@@ -204,7 +207,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
       }
     }
     if (callback) {
-      logPageInfo(verificationStatus, details, callback);
+      logPageInfo(serverUrl, title, verificationStatus, details, callback);
     }
     return;
   });

@@ -185,7 +185,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
         chrome.cookies.set({url: sanitizedUrl, name: title, value: verificationStatus});
         // Cache verification detail in local storage
         logPageInfo(serverUrl, title, verificationStatus, details, (info: string) => {
-          chrome.storage.sync.set(
+          chrome.storage.local.set(
             {[sanitizedUrl]: info}
           );
           // Also store the last verification hash and rev id
@@ -200,7 +200,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
             rev_id: lastDetail.rev_id,
             verification_hash: lastDetail.verification_hash,
           };
-          chrome.storage.sync.set(
+          chrome.storage.local.set(
             {["verification_hash_id_" + sanitizedUrl]: JSON.stringify(HashId)}
           );
         })
@@ -226,7 +226,7 @@ export async function checkIfCacheIsUpToDate(tabId: number, pageTitle: string, s
       response.on('data', (data) => {
         const actual = JSON.parse(data);
         const key = "verification_hash_id_" + sanitizedUrl
-        chrome.storage.sync.get(key, (d) => {
+        chrome.storage.local.get(key, (d) => {
           let isUpToDate = false;
           if (d[key]) {
             const expected = JSON.parse(d[key]);
@@ -236,8 +236,8 @@ export async function checkIfCacheIsUpToDate(tabId: number, pageTitle: string, s
               // If the actual page has the verification info removed, but the
               // local storage has the old version with non empty verification
               // remove, we then remove it from local storage.
-              chrome.storage.sync.remove(sanitizedUrl, () => {
-                chrome.storage.sync.remove(key, () => {
+              chrome.storage.local.remove(sanitizedUrl, () => {
+                chrome.storage.local.remove(key, () => {
                   callback(isUpToDate)
                 })
               })

@@ -32,8 +32,8 @@ function doInitialVerification(tab: any, doCheckCache: boolean = true) {
         if (badgeText === BadgeTextNORECORD) {
           chrome.cookies.set({url: sanitizedUrl, name: pageTitle, value: 'NORECORD'});
           // Delete sync storage if previous data exist
-          chrome.storage.sync.remove(sanitizedUrl);
-          chrome.storage.sync.remove("verification_hash_id_" + sanitizedUrl);
+          chrome.storage.local.remove(sanitizedUrl);
+          chrome.storage.local.remove("verification_hash_id_" + sanitizedUrl);
           delete processingTabId[tab.id];
           return;
         }

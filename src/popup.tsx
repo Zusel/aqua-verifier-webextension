@@ -42,7 +42,7 @@ const Popup = () => {
         const verificationStatusMessage = verificationStatusMap[badgeStatus] || somethingBadHappened;
         setVerificationStatus(verificationStatusMessage);
       });
-      chrome.storage.sync.get(sanitizedUrl, (data) => {
+      chrome.storage.local.get(sanitizedUrl, (data) => {
         if (!data[sanitizedUrl]) {
           return;
         }

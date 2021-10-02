@@ -154,7 +154,7 @@ function logPageInfo(serverUrl: string, title:string, status: string, details: {
     }
     const revid = details.verified_ids[i]
     const revidURL = `${serverUrl}/index.php?title=${title}&oldid=${revid}`
-    out += `${i + 1}. Verification of <a href='${revidURL}'>Revision ID ${revid}<a>.<br>`;
+    out += `${i + 1}. Verification of <a href='${revidURL}' target="_blank">Revision ID ${revid}<a>.<br>`;
     out += formatRevisionInfo2HTML(serverUrl, details.revision_details[i], verbose);
     const count = i + 1;
     out += `${_space2}Progress: ${count} / ${details.verified_ids.length} (${(100 * count / details.verified_ids.length).toFixed(1)}%)<br>`;

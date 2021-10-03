@@ -81,7 +81,13 @@ export function setBadgeNA(tabId: number) {
   chrome.action.setBadgeText({ tabId: tabId, text: BadgeTextNA });
 }
 
-function getDAMeta(tabId: number): Promise<string | null> {
+export function setBadgeNORECORD(tabId: number) {
+  chrome.action.setBadgeBackgroundColor({tabId: tabId, color: BadgeColorBlue});
+  chrome.action.setBadgeText({ tabId: tabId, text: BadgeTextNORECORD });
+}
+
+
+export function getDAMeta(tabId: number): Promise<string | null> {
   return new Promise((resolve, reject) => {
     chrome.scripting.executeScript(
       {
@@ -103,18 +109,8 @@ function getDAMeta(tabId: number): Promise<string | null> {
   });
 }
 
-export async function setInitialBadge(tabId: number, urlObj: URL | null) {
-  if (!urlObj) {
-    setBadgeNA(tabId);
-    return Promise.resolve(BadgeTextNA);
-  }
-  const extractedPageTitle = extractPageTitle(urlObj);
-  const serverUrl = await getDAMeta(tabId);
-  if (!serverUrl) {
-    setBadgeNA(tabId);
-    return Promise.resolve(BadgeTextNA);
-  }
-  const urlForChecking = `${serverUrl}/rest.php/data_accounting/v1/standard/get_page_last_rev?var1=${extractedPageTitle}`;
+export async function setInitialBadge(tabId: number, serverUrl: string, pageTitle: string) {
+  const urlForChecking = `${serverUrl}/rest.php/data_accounting/v1/standard/get_page_last_rev?var1=${pageTitle}`;
   const promise = new Promise((resolve, reject) => {
     adaptiveGet(urlForChecking)(urlForChecking, (response) => {
       response.on('data', (data) => {

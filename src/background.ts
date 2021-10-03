@@ -1,18 +1,36 @@
-import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, BadgeTextNORECORD, setBadgeStatus, getUrlObj, setBadgeNA, checkIfCacheIsUpToDate } from "./verifier";
+import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, BadgeTextNORECORD, setBadgeStatus, getUrlObj, setBadgeNA, setBadgeNORECORD, checkIfCacheIsUpToDate, getDAMeta } from "./verifier";
 
 // https://stackoverflow.com/questions/60545285/how-to-use-onupdated-and-onactivated-simultanously
 const processingTabId: { [key: number]: boolean } = {};
 
-function doInitialVerification(tab: any, doCheckCache: boolean = true) {
+async function doInitialVerification(tab: any, doCheckCache: boolean = true) {
   // processintTabId is necessary to prevent duplicate invocation of
   // doInitialVerification by the chrome listeners.
   if (processingTabId[tab.id]) return;
   processingTabId[tab.id] = true;
+
+  if (!tab.url) {
+    setBadgeNA(tab.id);
+    delete processingTabId[tab.id];
+    return;
+  }
   const urlObj = getUrlObj(tab);
+  if (!urlObj) {
+    setBadgeNA(tab.id);
+    delete processingTabId[tab.id];
+    return;
+  }
+
+  const serverUrl = await getDAMeta(tab.id) || '';
+  if (!serverUrl) {
+    setBadgeNA(tab.id);
+    delete processingTabId[tab.id];
+    return;
+  }
 
   const pageTitle = extractPageTitle(urlObj);
-  if (!pageTitle || !tab.url) {
-    setBadgeNA(tab.id);
+  if (!pageTitle) {
+    setBadgeNORECORD(tab.id);
     delete processingTabId[tab.id];
     return;
   }
@@ -22,7 +40,7 @@ function doInitialVerification(tab: any, doCheckCache: boolean = true) {
   chrome.cookies.get({url: sanitizedUrl, name: pageTitle}).then((cookie) => {
     console.log("doInitialVerification, cookie", cookie ? cookie.value : cookie, pageTitle);
     async function doVerifyFromScratch() {
-      await setInitialBadge(tab.id, urlObj)
+      await setInitialBadge(tab.id, serverUrl, pageTitle)
       .then((badgeText) => {
         if (badgeText === BadgeTextNA) {
           delete processingTabId[tab.id];

@@ -31,7 +31,11 @@ export function extractPageTitle(urlObj: URL | null) {
   if (!urlObj) {
     return '';
   }
-  const titleUrlform = urlObj.pathname.split('/').pop();
+  if (!urlObj.pathname.startsWith('/index.php/')) {
+    return '';
+  }
+  // The first 11 chars are '/index.php/', which we skip.
+  const titleUrlform = urlObj.pathname.slice(11);
   if (!titleUrlform) {
     return '';
   }

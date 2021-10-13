@@ -177,7 +177,8 @@ export function verifyPage(title: string, callback: Function | null = null) {
         chrome.action.setBadgeText({tabId: tab.id, text: 'NR' });
         return;
       }
-      [verificationStatus, details] = await externalVerifierVerifyPage(title, serverUrl, verbose, false);
+      const doVerifyMerkleProof = false;
+      [verificationStatus, details] = await externalVerifierVerifyPage(title, serverUrl, verbose, false, doVerifyMerkleProof);
       setBadgeStatus(tab.id, verificationStatus)
       if (tab.url) {
         const sanitizedUrl = tab.url.split('?')[0];

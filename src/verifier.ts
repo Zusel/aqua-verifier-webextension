@@ -177,6 +177,12 @@ export function verifyPage(title: string, callback: Function | null = null) {
         chrome.action.setBadgeText({tabId: tab.id, text: 'N/A' });
         return;
       }
+      if (title === '') {
+        // If we get to this point, we know that DA is supported in the domain,
+        // but the page title is empty.
+        setBadgeStatus(tab.id, 'NORECORD')
+        return
+      }
       const doVerifyMerkleProof = false;
       [verificationStatus, details] = await externalVerifierVerifyPage(title, serverUrl, verbose, false, doVerifyMerkleProof);
       setBadgeStatus(tab.id, verificationStatus)

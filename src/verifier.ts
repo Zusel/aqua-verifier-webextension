@@ -174,7 +174,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
       const verbose = false;
       serverUrl = await getDAMeta(tab.id);
       if (!serverUrl) {
-        chrome.action.setBadgeText({tabId: tab.id, text: 'NR' });
+        chrome.action.setBadgeText({tabId: tab.id, text: 'N/A' });
         return;
       }
       const doVerifyMerkleProof = false;

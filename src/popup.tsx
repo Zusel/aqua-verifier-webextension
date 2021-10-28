@@ -63,7 +63,7 @@ const Popup = () => {
         <div dangerouslySetInnerHTML={{ __html: verificationStatus}}>
         </div>
         <ul style={{ minWidth: "700px" }}>
-          <li>Current Page Title: {pageTitle}</li>
+          <li>Current Page Title: {pageTitle ? pageTitle : "<DA not supported or is not a wiki page>"}</li>
         </ul>
         <div dangerouslySetInnerHTML={{ __html: verificationLog}}>
         </div>

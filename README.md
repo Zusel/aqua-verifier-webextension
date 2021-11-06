@@ -1,6 +1,6 @@
 # VerifyPage
-This is a verification client for the micro-pkc https://github.com/FantasticoFox/micro-PKC
-it uses the CLI verification tool as an external dependency https://github.com/FantasticoFox/data-accounting-external-verifier
+This is a verification client for the micro-pkc https://github.com/inblockio/micro-PKC
+it uses the CLI verification tool as an external dependency https://github.com/inblockio/data-accounting-external-verifier
 
 ![build](https://github.com/chibat/chrome-extension-typescript-starter/workflows/build/badge.svg)
 

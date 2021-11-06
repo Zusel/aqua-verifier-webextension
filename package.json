@@ -17,7 +17,7 @@
     "url": "https://github.com/chibat/chrome-extension-typescript-starter.git"
   },
   "dependencies": {
-    "data-accounting-external-verifier": "git+https://git@github.com/FantasticoFox/data-accounting-external-verifier.git",
+    "data-accounting-external-verifier": "git+https://git@github.com/inblockio/data-accounting-external-verifier.git",
     "react": "^17.0.1",
     "react-dom": "^17.0.1"
   },

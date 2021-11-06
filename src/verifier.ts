@@ -2,7 +2,7 @@ import * as http from "http";
 import * as https from "https";
 // Not yet typed
 // @ts-ignore
-import { verifyPage as externalVerifierVerifyPage, formatRevisionInfo2HTML } from "data-accounting-external-verifier";
+import { verifyPage as externalVerifierVerifyPage, formatPageInfo2HTML } from "data-accounting-external-verifier";
 
 export const BadgeTextNA = 'N/A';
 // Dark gray custom picked
@@ -134,32 +134,8 @@ export async function setInitialBadge(tabId: number, serverUrl: string, pageTitl
 }
 
 function logPageInfo(serverUrl: string, title:string, status: string, details: {verified_ids: string[], revision_details: object[]} | null, callback: Function) {
-  if (status === 'NORECORD') {
-    callback('No revision record');
-    return;
-  }
-  if (status === 'N/A' || !details) {
-    callback('');
-    return;
-  }
   const verbose = false;
-  const _space2 = '&nbsp&nbsp';
-  let out = "";
-  out += `Number of Verified Page Revisions: ${details.verified_ids.length}<br>`;
-  for (let i = 0; i < details.revision_details.length; i++) {
-    if (i % 2 == 0) {
-      out += '<div style="background: LightCyan;">'
-    } else {
-      out += '<div>'
-    }
-    const revid = details.verified_ids[i]
-    const revidURL = `${serverUrl}/index.php?title=${title}&oldid=${revid}`
-    out += `${i + 1}. Verification of <a href='${revidURL}' target="_blank">Revision ID ${revid}<a>.<br>`;
-    out += formatRevisionInfo2HTML(serverUrl, details.revision_details[i], verbose);
-    const count = i + 1;
-    out += `${_space2}Progress: ${count} / ${details.verified_ids.length} (${(100 * count / details.verified_ids.length).toFixed(1)}%)<br>`;
-    out += '</div>'
-  };
+  const out = formatPageInfo2HTML(serverUrl, title, status, details, verbose);
   callback(out);
 }
 

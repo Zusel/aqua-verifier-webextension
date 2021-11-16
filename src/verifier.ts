@@ -12,6 +12,20 @@ export const BadgeTextNORECORD = 'NR';
 // Blueberry
 export const BadgeColorBlue = '#427FED';
 
+// TODO import from external verifier.
+const ERROR_VERIFICATION_STATUS = "ERROR";
+
+type verificationDetailsOKT = {
+  verified_ids: string[];
+  revision_details: any[];
+}
+
+type verificationDetailsErrorT = {
+  error: string;
+}
+
+type verificationDetailsT = verificationDetailsOKT | verificationDetailsErrorT | null
+
 function isEmpty(obj: any) {
   return Object.keys(obj).length === 0;
 }
@@ -133,7 +147,13 @@ export async function setInitialBadge(tabId: number, serverUrl: string, pageTitl
   return promise;
 }
 
-function logPageInfo(serverUrl: string, title:string, status: string, details: {verified_ids: string[], revision_details: object[]} | null, callback: Function) {
+function logPageInfo(serverUrl: string, title:string, status: string, details: verificationDetailsT, callback: Function) {
+  if (status === ERROR_VERIFICATION_STATUS) {
+    if (details && "error" in details) {
+      callback(details.error)
+    }
+    return
+  }
   const verbose = false;
   const out = formatPageInfo2HTML(serverUrl, title, status, details, verbose);
   callback(out);
@@ -143,7 +163,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
   chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
     const tab = tabs[0];
     let verificationStatus = "N/A";
-    let details: { verified_ids: string[]; revision_details: any[]; } | null = null;
+    let details: verificationDetailsT = null;
     let serverUrl: string | null = "N/A";
     if (tab.id) {
       chrome.action.setBadgeText({tabId: tab.id, text: '⏳' });
@@ -171,6 +191,9 @@ export function verifyPage(title: string, callback: Function | null = null) {
           chrome.storage.local.set(
             {[sanitizedUrl]: info}
           );
+          if (details && "error" in details) {
+            return;
+          }
           // Also store the last verification hash and rev id
           // We use this info to check if the page has been updated since we
           // last verify it. If so, we rerun the verification process

@@ -150,7 +150,7 @@ export async function setInitialBadge(tabId: number, serverUrl: string, pageTitl
 function logPageInfo(serverUrl: string, title:string, status: string, details: verificationDetailsT, callback: Function) {
   if (status === ERROR_VERIFICATION_STATUS) {
     if (details && "error" in details) {
-      callback(details.error)
+      callback("ERROR: " + details.error)
     }
     return
   }

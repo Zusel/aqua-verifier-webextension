@@ -180,7 +180,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
         return
       }
       const doVerifyMerkleProof = false;
-      [verificationStatus, details] = await externalVerifierVerifyPage(title, serverUrl, verbose, false, doVerifyMerkleProof);
+      [verificationStatus, details] = await externalVerifierVerifyPage(title, serverUrl, verbose, doVerifyMerkleProof, null);
       setBadgeStatus(tab.id, verificationStatus)
       if (tab.url) {
         const sanitizedUrl = tab.url.split('?')[0];

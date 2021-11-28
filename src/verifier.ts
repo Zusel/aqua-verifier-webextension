@@ -164,12 +164,6 @@ export async function setInitialBadge(tabId: number, serverUrl: string, pageTitl
 }
 
 function logPageInfo(serverUrl: string, title:string, status: string, details: verificationDetailsT, callback: Function) {
-  if (status === ERROR_VERIFICATION_STATUS) {
-    if (details && "error" in details) {
-      callback("ERROR: " + details.error)
-    }
-    return
-  }
   const verbose = false;
   const out = formatPageInfo2HTML(serverUrl, title, status, details, verbose);
   callback(out);

@@ -45,14 +45,24 @@ export function extractPageTitle(urlObj: URL | null) {
   if (!urlObj) {
     return '';
   }
-  if (!urlObj.pathname.startsWith('/index.php/')) {
+  if (!urlObj.pathname.startsWith('/index.php')) {
     return '';
   }
-  // The first 11 chars are '/index.php/', which we skip.
-  const titleUrlform = urlObj.pathname.slice(11);
-  if (!titleUrlform) {
+  let titleUrlForm
+  if (urlObj.searchParams.has("title")) {
+    // If there is title param, return it instead.
+    titleUrlForm = urlObj.searchParams.get("title");
+  } else {
+    if (!urlObj.pathname.startsWith('/index.php/')) {
+      return '';
+    }
+    // The first 11 chars are '/index.php/', which we skip.
+    titleUrlForm = urlObj.pathname.slice(11);
+  }
+  if (!titleUrlForm) {
     return '';
   }
+
   // Convert from Mediawiki url title to page title.
   // See https://www.mediawiki.org/wiki/Manual:PAGENAMEE_encoding
   // If you look at the source code of MediaWiki, in the file Title.php, in the method `makeTitle`, you will notice that there are multiple representations of a page title:
@@ -60,7 +70,7 @@ export function extractPageTitle(urlObj: URL | null) {
   // - mDbkeyform: text form with underscores
   // - mUrlform: url encoded text form with underscores
   // We weant to return the mTextform.
-  const titleDbkeyform = decodeURIComponent(titleUrlform);
+  const titleDbkeyform = decodeURIComponent(titleUrlForm);
   return titleDbkeyform.replace(/_/g, ' ');
 }
 

@@ -3,6 +3,9 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 
 import { verifyPage, extractPageTitle, BadgeColorNA, BadgeColorBlue, getUrlObj, sanitizeWikiUrl } from "./verifier";
+// Not yet typed
+// @ts-ignore
+import { formatPageInfo2HTML } from "data-accounting-external-verifier";
 
 // TODO this is totally not idiomatic.
 const verificationStatusMap: { [key: string]: string } = {
@@ -46,16 +49,22 @@ const Popup = () => {
         if (!data[sanitizedUrl]) {
           return;
         }
-        setVerificationLog(data[sanitizedUrl]);
+        formatDetailsAndSetVerificationLog(JSON.parse(data[sanitizedUrl]));
       });
     });
   }, []);
+
+  function formatDetailsAndSetVerificationLog(data: { [key: string]: any }) {
+    const verbose = false;
+    const out = formatPageInfo2HTML(data.serverUrl, data.title, data.status, data.details, verbose);
+    setVerificationLog(out);
+  }
 
   return (
     <>
       <div style={{ fontSize: "larger" }}>
         <button
-          onClick={() => verifyPage(pageTitle, setVerificationLog)}
+          onClick={() => verifyPage(pageTitle, formatDetailsAndSetVerificationLog)}
           style={{ float: "right" }}
         >
           Verify Page

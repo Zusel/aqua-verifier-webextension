@@ -2,7 +2,7 @@ import * as http from "http";
 import * as https from "https";
 // Not yet typed
 // @ts-ignore
-import { verifyPage as externalVerifierVerifyPage, formatPageInfo2HTML } from "data-accounting-external-verifier";
+import { verifyPage as externalVerifierVerifyPage } from "data-accounting-external-verifier";
 
 export const BadgeTextNA = 'N/A';
 // Dark gray custom picked
@@ -163,69 +163,73 @@ export async function setInitialBadge(tabId: number, serverUrl: string, pageTitl
   return promise;
 }
 
-function logPageInfo(serverUrl: string, title:string, status: string, details: verificationDetailsT, callback: Function) {
-  const verbose = false;
-  const out = formatPageInfo2HTML(serverUrl, title, status, details, verbose);
-  callback(out);
-}
-
 export function verifyPage(title: string, callback: Function | null = null) {
   chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
     const tab = tabs[0];
+    let serverUrl: string | null = "N/A";
     let verificationStatus = "N/A";
     let details: verificationDetailsT = null;
-    let serverUrl: string | null = "N/A";
-    if (tab.id) {
-      chrome.action.setBadgeText({tabId: tab.id, text: '⏳' });
-      const verbose = false;
-      serverUrl = await getDAMeta(tab.id);
-      if (!serverUrl) {
-        chrome.action.setBadgeText({tabId: tab.id, text: 'N/A' });
+    if (!tab.id) {
+      return;
+    }
+    chrome.action.setBadgeText({tabId: tab.id, text: '⏳' });
+    const verbose = false;
+    serverUrl = await getDAMeta(tab.id);
+    if (!serverUrl) {
+      chrome.action.setBadgeText({tabId: tab.id, text: 'N/A' });
+      return;
+    }
+    if (title === '') {
+      // If we get to this point, we know that DA is supported in the domain,
+      // but the page title is empty.
+      setBadgeStatus(tab.id, 'NORECORD');
+      return;
+    }
+    const doVerifyMerkleProof = false;
+    [verificationStatus, details] = await externalVerifierVerifyPage(title, serverUrl, verbose, doVerifyMerkleProof, null);
+    setBadgeStatus(tab.id, verificationStatus)
+    const verificationData = {
+      serverUrl: serverUrl,
+      title: title,
+      status: verificationStatus,
+      details: details
+    };
+    if (tab.url) {
+      const sanitizedUrl = sanitizeWikiUrl(tab.url);
+      // Update cookie
+      chrome.cookies.set({url: sanitizedUrl, name: title, value: verificationStatus});
+      // Cache verification data in local storage
+      chrome.storage.local.set(
+        {[sanitizedUrl]: JSON.stringify(verificationData)}
+      );
+      if (details && "error" in details) {
+        if (callback) {
+          callback(verificationData);
+        }
         return;
       }
-      if (title === '') {
-        // If we get to this point, we know that DA is supported in the domain,
-        // but the page title is empty.
-        setBadgeStatus(tab.id, 'NORECORD')
-        return
+      // Also store the last verification hash and rev id
+      // We use this info to check if the page has been updated since we
+      // last verify it. If so, we rerun the verification process
+      // automatically.
+      if (!details || !details.revision_details || details.revision_details.length === 0) {
+        if (callback) {
+          callback(verificationData);
+        }
+        return;
       }
-      const doVerifyMerkleProof = false;
-      [verificationStatus, details] = await externalVerifierVerifyPage(title, serverUrl, verbose, doVerifyMerkleProof, null);
-      setBadgeStatus(tab.id, verificationStatus)
-      if (tab.url) {
-        const sanitizedUrl = sanitizeWikiUrl(tab.url);
-        // Update cookie
-        chrome.cookies.set({url: sanitizedUrl, name: title, value: verificationStatus});
-        // Cache verification detail in local storage
-        logPageInfo(serverUrl, title, verificationStatus, details, (info: string) => {
-          chrome.storage.local.set(
-            {[sanitizedUrl]: info}
-          );
-          if (details && "error" in details) {
-            return;
-          }
-          // Also store the last verification hash and rev id
-          // We use this info to check if the page has been updated since we
-          // last verify it. If so, we rerun the verification process
-          // automatically.
-          if (!details || !details.revision_details || details.revision_details.length === 0) {
-            return;
-          }
-          const lastDetail = details.revision_details[details.revision_details.length - 1];
-          const HashId = {
-            rev_id: lastDetail.rev_id,
-            verification_hash: lastDetail.verification_hash,
-          };
-          chrome.storage.local.set(
-            {["verification_hash_id_" + sanitizedUrl]: JSON.stringify(HashId)}
-          );
-        })
+      const lastDetail = details.revision_details[details.revision_details.length - 1];
+      const HashId = {
+        rev_id: lastDetail.rev_id,
+        verification_hash: lastDetail.verification_hash,
+      };
+      chrome.storage.local.set(
+        {["verification_hash_id_" + sanitizedUrl]: JSON.stringify(HashId)}
+      );
+      if (callback) {
+        callback(verificationData);
       }
     }
-    if (callback) {
-      logPageInfo(serverUrl, title, verificationStatus, details, callback);
-    }
-    return;
   });
 }
 

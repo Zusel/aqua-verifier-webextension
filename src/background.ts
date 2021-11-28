@@ -1,4 +1,4 @@
-import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, BadgeTextNORECORD, setBadgeStatus, getUrlObj, setBadgeNA, setBadgeNORECORD, checkIfCacheIsUpToDate, getDAMeta } from "./verifier";
+import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, BadgeTextNORECORD, setBadgeStatus, getUrlObj, setBadgeNA, setBadgeNORECORD, checkIfCacheIsUpToDate, getDAMeta, sanitizeWikiUrl } from "./verifier";
 
 // https://stackoverflow.com/questions/60545285/how-to-use-onupdated-and-onactivated-simultanously
 const processingTabId: { [key: number]: boolean } = {};
@@ -35,7 +35,7 @@ async function doInitialVerification(tab: any, doCheckCache: boolean = true) {
     return;
   }
 
-  const sanitizedUrl = tab.url.split('?')[0];
+  const sanitizedUrl = sanitizeWikiUrl(tab.url);
 
   chrome.cookies.get({url: sanitizedUrl, name: pageTitle}).then((cookie) => {
     console.log("doInitialVerification, cookie", cookie ? cookie.value : cookie, pageTitle);
@@ -70,7 +70,6 @@ async function doInitialVerification(tab: any, doCheckCache: boolean = true) {
         return
       }
       // Check if our stored verification info is outdated
-      const sanitizedUrl = tab.url.split('?')[0];
       checkIfCacheIsUpToDate(tab.id, pageTitle, sanitizedUrl, (isUpToDate: boolean) => {
         if (isUpToDate) {
           setBadgeStatus(tab.id, cookie.value.toString());

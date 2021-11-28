@@ -2,7 +2,7 @@ import * as http from "http";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 
-import { verifyPage, extractPageTitle, BadgeColorNA, BadgeColorBlue, getUrlObj } from "./verifier";
+import { verifyPage, extractPageTitle, BadgeColorNA, BadgeColorBlue, getUrlObj, sanitizeWikiUrl } from "./verifier";
 
 // TODO this is totally not idiomatic.
 const verificationStatusMap: { [key: string]: string } = {
@@ -35,7 +35,7 @@ const Popup = () => {
         return;
       }
       setPageTitle(extractedPageTitle);
-      const sanitizedUrl = tab.url.split('?')[0];
+      const sanitizedUrl = sanitizeWikiUrl(tab.url);
       chrome.cookies.get({url: sanitizedUrl, name: extractedPageTitle}).then((cookie: any) => {
         const badgeStatus = (!!cookie && cookie.value.toString()) || 'N/A';
         const somethingBadHappened = '<div style="color: Black; font-size: larger;">Unknown error</div> Unexpected badge status: ' + badgeStatus;

@@ -38,6 +38,12 @@ export function getUrlObj(tab: any) {
   return tab.url ? new URL(tab.url): null;
 }
 
+export function sanitizeWikiUrl(url: string) {
+  // E.g. original: http://localhost:9352/index.php?title=Main_Page&action=history.
+  // Sanitized: http://localhost:9352/.
+  return url.split('index.php')[0];
+}
+
 export function extractPageTitle(urlObj: URL | null) {
   // If you update this function, make sure to sync with the same function in
   // the DataAccounting repo, in
@@ -193,7 +199,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
       [verificationStatus, details] = await externalVerifierVerifyPage(title, serverUrl, verbose, doVerifyMerkleProof, null);
       setBadgeStatus(tab.id, verificationStatus)
       if (tab.url) {
-        const sanitizedUrl = tab.url.split('?')[0];
+        const sanitizedUrl = sanitizeWikiUrl(tab.url);
         // Update cookie
         chrome.cookies.set({url: sanitizedUrl, name: title, value: verificationStatus});
         // Cache verification detail in local storage

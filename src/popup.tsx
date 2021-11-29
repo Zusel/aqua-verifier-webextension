@@ -1,6 +1,7 @@
 import * as http from "http";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
+import Clipboard from "clipboard";
 
 import { verifyPage, extractPageTitle, BadgeColorNA, BadgeColorBlue, getUrlObj, sanitizeWikiUrl } from "./verifier";
 // Not yet typed
@@ -17,6 +18,8 @@ const verificationStatusMap: { [key: string]: string } = {
   'NORECORD': '<div style="color: ' + BadgeColorBlue + '; font-size: larger;">Data accounting supported but no record available</div> Information on this page might have been tampered.',
   'N/A': '<div style="color: ' + BadgeColorNA + '; font-size: larger;">No record available</div> Information on this page might have been tampered.',
 }
+
+const clipboard = new Clipboard(".clipboard-button");
 
 const Popup = () => {
   const [pageTitle, setPageTitle] = useState('');

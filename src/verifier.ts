@@ -4,7 +4,7 @@ import * as https from "https";
 // @ts-ignore
 import { verifyPage as externalVerifierVerifyPage, apiVersion as externalVerifierApiVersion } from "data-accounting-external-verifier";
 
-const apiVersion = "0.1.0";
+const apiVersion = "0.2.0";
 
 export const BadgeTextNA = 'N/A';
 // Dark gray custom picked
@@ -152,7 +152,7 @@ export function getServerInfo(tabId: number): Promise<[string | null, string | n
 }
 
 export async function setInitialBadge(tabId: number, serverUrl: string, pageTitle: string) {
-  const urlForChecking = `${serverUrl}/rest.php/data_accounting/v1/get_page_last_rev/${pageTitle}`;
+  const urlForChecking = `${serverUrl}/rest.php/data_accounting/get_page_last_rev/${pageTitle}`;
   const promise = new Promise((resolve, reject) => {
     adaptiveGet(urlForChecking)(urlForChecking, (response) => {
       response.on('data', (data) => {
@@ -279,7 +279,7 @@ export async function checkIfCacheIsUpToDate(tabId: number, pageTitle: string, s
     // cache since the page is not a data accounting page anyway.
     callback(true);
   }
-  const urlForChecking = `${serverUrl}/rest.php/data_accounting/v1/get_page_last_rev/${pageTitle}`;
+  const urlForChecking = `${serverUrl}/rest.php/data_accounting/get_page_last_rev/${pageTitle}`;
   adaptiveGet(urlForChecking)(urlForChecking, (response) => {
       response.on('data', (data) => {
         const actual = JSON.parse(data);

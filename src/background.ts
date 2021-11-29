@@ -1,4 +1,4 @@
-import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, BadgeTextNORECORD, setBadgeStatus, getUrlObj, setBadgeNA, setBadgeNORECORD, checkIfCacheIsUpToDate, getDAMeta, sanitizeWikiUrl } from "./verifier";
+import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, BadgeTextNORECORD, setBadgeStatus, getUrlObj, setBadgeNA, setBadgeNORECORD, checkIfCacheIsUpToDate, getServerInfo, sanitizeWikiUrl } from "./verifier";
 
 // https://stackoverflow.com/questions/60545285/how-to-use-onupdated-and-onactivated-simultanously
 const processingTabId: { [key: number]: boolean } = {};
@@ -21,7 +21,8 @@ async function doInitialVerification(tab: any, doCheckCache: boolean = true) {
     return;
   }
 
-  const serverUrl = await getDAMeta(tab.id) || '';
+  const [maybeServerUrl, _] = await getServerInfo(tab.id);
+  const serverUrl = maybeServerUrl || '';
   if (!serverUrl) {
     setBadgeNA(tab.id);
     delete processingTabId[tab.id];

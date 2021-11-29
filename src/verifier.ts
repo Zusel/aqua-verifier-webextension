@@ -2,7 +2,9 @@ import * as http from "http";
 import * as https from "https";
 // Not yet typed
 // @ts-ignore
-import { verifyPage as externalVerifierVerifyPage } from "data-accounting-external-verifier";
+import { verifyPage as externalVerifierVerifyPage, apiVersion as externalVerifierApiVersion } from "data-accounting-external-verifier";
+
+const apiVersion = "0.1.0";
 
 export const BadgeTextNA = 'N/A';
 // Dark gray custom picked
@@ -96,6 +98,11 @@ export function setBadgeStatus(tabId: number, status: string) {
   } else if (status === 'NORECORD') {
     badgeColor = BadgeColorBlue;
     badgeText = 'NR';
+  } else if (status === 'API_MISMATCH') {
+    // From https://www.schemecolor.com/advent-of-the-season.php
+    // Naples Yellow
+    badgeColor = '#F9D460';
+    badgeText = 'OUT';
   } else {
     console.log(`UGH!!! ${status}`)
     // Something wrong is happening
@@ -117,18 +124,23 @@ export function setBadgeNORECORD(tabId: number) {
 }
 
 
-export function getDAMeta(tabId: number): Promise<string | null> {
+export function getServerInfo(tabId: number): Promise<[string | null, string | null]> {
   return new Promise((resolve, reject) => {
     chrome.scripting.executeScript(
       {
         target: {tabId: tabId},
         func: () => {
-          const DAMeta = document.querySelector('meta[name="data-accounting-mediawiki"]');
-          if (DAMeta && DAMeta instanceof HTMLMetaElement) {
-            return DAMeta.content;
-          } else {
-            return null;
+          function getMeta(name: string) {
+            const meta = document.querySelector(`meta[name="${name}"]`);
+            if (meta && meta instanceof HTMLMetaElement) {
+              return meta.content;
+            } else {
+              return null;
+            }
           }
+          const serverUrl = getMeta("data-accounting-mediawiki");
+          const serverApiVersion = getMeta("data-accounting-api-version");
+          return [serverUrl, serverApiVersion];
         },
       },
       (injectionResults) => {
@@ -167,14 +179,18 @@ export function verifyPage(title: string, callback: Function | null = null) {
   chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
     const tab = tabs[0];
     let serverUrl: string | null = "N/A";
+    let serverApiVersion: string | null = "N/AA;"
     let verificationStatus = "N/A";
     let details: verificationDetailsT = null;
     if (!tab.id) {
       return;
     }
+    if (!tab.url) {
+      return;
+    }
     chrome.action.setBadgeText({tabId: tab.id, text: '⏳' });
     const verbose = false;
-    serverUrl = await getDAMeta(tab.id);
+    [serverUrl, serverApiVersion] = await getServerInfo(tab.id);
     if (!serverUrl) {
       chrome.action.setBadgeText({tabId: tab.id, text: 'N/A' });
       return;
@@ -185,6 +201,31 @@ export function verifyPage(title: string, callback: Function | null = null) {
       setBadgeStatus(tab.id, 'NORECORD');
       return;
     }
+
+    const sanitizedUrl = sanitizeWikiUrl(tab.url);
+
+    // Now we check the API versions.
+    if (!(apiVersion === externalVerifierApiVersion && apiVersion === serverApiVersion)) {
+      setBadgeStatus(tab.id, 'API_MISMATCH');
+      verificationStatus = ERROR_VERIFICATION_STATUS;
+      // Update cookie
+      chrome.cookies.set({url: sanitizedUrl, name: title, value: verificationStatus});
+      const vd = {
+        serverUrl: serverUrl,
+        title: title,
+        status: verificationStatus,
+        details: {"error": `API version mismatch. Supported version: ${apiVersion}. Library version: ${externalVerifierApiVersion}. Server version: ${serverApiVersion}<br>Please update VerifyPage.`}
+      }
+      // Cache verification data in local storage
+      chrome.storage.local.set(
+        {[sanitizedUrl]: JSON.stringify(vd)}
+      );
+      if (callback) {
+        callback(vd);
+      }
+      return;
+    }
+
     const doVerifyMerkleProof = false;
     [verificationStatus, details] = await externalVerifierVerifyPage(title, serverUrl, verbose, doVerifyMerkleProof, null);
     setBadgeStatus(tab.id, verificationStatus)
@@ -194,48 +235,45 @@ export function verifyPage(title: string, callback: Function | null = null) {
       status: verificationStatus,
       details: details
     };
-    if (tab.url) {
-      const sanitizedUrl = sanitizeWikiUrl(tab.url);
-      // Update cookie
-      chrome.cookies.set({url: sanitizedUrl, name: title, value: verificationStatus});
-      // Cache verification data in local storage
-      chrome.storage.local.set(
-        {[sanitizedUrl]: JSON.stringify(verificationData)}
-      );
-      if (details && "error" in details) {
-        if (callback) {
-          callback(verificationData);
-        }
-        return;
-      }
-      // Also store the last verification hash and rev id
-      // We use this info to check if the page has been updated since we
-      // last verify it. If so, we rerun the verification process
-      // automatically.
-      if (!details || !details.revision_details || details.revision_details.length === 0) {
-        if (callback) {
-          callback(verificationData);
-        }
-        return;
-      }
-      const lastDetail = details.revision_details[details.revision_details.length - 1];
-      const HashId = {
-        rev_id: lastDetail.rev_id,
-        verification_hash: lastDetail.verification_hash,
-      };
-      chrome.storage.local.set(
-        {["verification_hash_id_" + sanitizedUrl]: JSON.stringify(HashId)}
-      );
+    // Update cookie
+    chrome.cookies.set({url: sanitizedUrl, name: title, value: verificationStatus});
+    // Cache verification data in local storage
+    chrome.storage.local.set(
+      {[sanitizedUrl]: JSON.stringify(verificationData)}
+    );
+    if (details && "error" in details) {
       if (callback) {
         callback(verificationData);
       }
+      return;
+    }
+    // Also store the last verification hash and rev id
+    // We use this info to check if the page has been updated since we
+    // last verify it. If so, we rerun the verification process
+    // automatically.
+    if (!details || !details.revision_details || details.revision_details.length === 0) {
+      if (callback) {
+        callback(verificationData);
+      }
+      return;
+    }
+    const lastDetail = details.revision_details[details.revision_details.length - 1];
+    const HashId = {
+      rev_id: lastDetail.rev_id,
+      verification_hash: lastDetail.verification_hash,
+    };
+    chrome.storage.local.set(
+      {["verification_hash_id_" + sanitizedUrl]: JSON.stringify(HashId)}
+    );
+    if (callback) {
+      callback(verificationData);
     }
   });
 }
 
 export async function checkIfCacheIsUpToDate(tabId: number, pageTitle: string, sanitizedUrl: string, callback: Function) {
   // Check if our stored verification info is outdated
-  const serverUrl = await getDAMeta(tabId);
+  const [serverUrl, _] = await getServerInfo(tabId);
   if (!serverUrl) {
     // This execution branch shouldn't happen. If it happens, then don't update
     // cache since the page is not a data accounting page anyway.

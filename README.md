@@ -1,12 +1,12 @@
-# VerifyPage
-This is a verification client for the micro-pkc https://github.com/inblockio/micro-PKC
-it uses the CLI verification tool as an external dependency https://github.com/inblockio/data-accounting-external-verifier
-
 ![build](https://github.com/chibat/chrome-extension-typescript-starter/workflows/build/badge.svg)
 
+# VerifyPage - Chrome Browser Extension
+You can install this extension from the Chrome-App-Store [here](https://chrome.google.com/webstore/detail/verifypage/gadnjidhhadchnegnpadkibmjlgihiaj?hl=en-GB&authuser=0).
+
+This is a verification client for the micro-pkc https://github.com/inblockio/micro-PKC
+it uses the CLI verification tool as an external dependency https://github.com/inblockio/data-accounting-external-verifier. If you want the latest build, or you want to build it yourself, follow the instructions given here.
+
 Chrome Extension, TypeScript, HTML
-
-
 
 ## Prerequisites
 

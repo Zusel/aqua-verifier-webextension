@@ -4,7 +4,7 @@ import * as https from "https";
 // @ts-ignore
 import { verifyPage as externalVerifierVerifyPage, apiVersion as externalVerifierApiVersion } from "data-accounting-external-verifier";
 
-const apiVersion = "0.2.0";
+const apiVersion = "0.3.0";
 
 export const BadgeTextNA = 'N/A';
 // Dark gray custom picked
@@ -18,7 +18,7 @@ export const BadgeColorBlue = '#427FED';
 const ERROR_VERIFICATION_STATUS = "ERROR";
 
 type verificationDetailsOKT = {
-  verified_ids: string[];
+  verification_hashes: string[];
   revision_details: any[];
 }
 
@@ -229,6 +229,16 @@ export function verifyPage(title: string, callback: Function | null = null) {
     const doVerifyMerkleProof = false;
     [verificationStatus, details] = await externalVerifierVerifyPage(title, serverUrl, verbose, doVerifyMerkleProof, null);
     setBadgeStatus(tab.id, verificationStatus)
+    // Runtime check that the type is verificationDetailsOKT.
+    if (!!details && ("revision_details" in details)) {
+      // PERF We delete the Merkle proof here to save storage space.
+      details.revision_details.forEach(d => {
+        if (!d.data.witness) {
+          return
+        }
+        delete d.data.witness.structured_merkle_proof
+      })
+    }
     const verificationData = {
       serverUrl: serverUrl,
       title: title,
@@ -247,7 +257,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
       }
       return;
     }
-    // Also store the last verification hash and rev id
+    // Also store the last verification hash.
     // We use this info to check if the page has been updated since we
     // last verify it. If so, we rerun the verification process
     // automatically.
@@ -258,12 +268,8 @@ export function verifyPage(title: string, callback: Function | null = null) {
       return;
     }
     const lastDetail = details.revision_details[details.revision_details.length - 1];
-    const HashId = {
-      rev_id: lastDetail.rev_id,
-      verification_hash: lastDetail.verification_hash,
-    };
     chrome.storage.local.set(
-      {["verification_hash_id_" + sanitizedUrl]: JSON.stringify(HashId)}
+      {["verification_hash_" + sanitizedUrl]: lastDetail.verification_hash}
     );
     if (callback) {
       callback(verificationData);
@@ -283,12 +289,12 @@ export async function checkIfCacheIsUpToDate(tabId: number, pageTitle: string, s
   adaptiveGet(urlForChecking)(urlForChecking, (response) => {
       response.on('data', (data) => {
         const actual = JSON.parse(data);
-        const key = "verification_hash_id_" + sanitizedUrl
+        const key = "verification_hash_" + sanitizedUrl
         chrome.storage.local.get(key, (d) => {
           let isUpToDate = false;
           if (d[key]) {
-            const expected = JSON.parse(d[key]);
-            isUpToDate = (expected.rev_id === actual.rev_id) && (expected.verification_hash === actual.verification_hash);
+            const expectedVH = d[key];
+            isUpToDate = expectedVH === actual.verification_hash;
             if (isEmpty(actual)) {
               // This is a corner case.
               // If the actual page has the verification info removed, but the

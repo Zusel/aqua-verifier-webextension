@@ -226,7 +226,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
       return;
     }
 
-    const doVerifyMerkleProof = false;
+    const doVerifyMerkleProof = true;
     [verificationStatus, details] = await externalVerifierVerifyPage(title, serverUrl, verbose, doVerifyMerkleProof, null);
     setBadgeStatus(tab.id, verificationStatus)
     // Runtime check that the type is verificationDetailsOKT.

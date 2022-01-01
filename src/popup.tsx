@@ -29,8 +29,17 @@ const Popup = () => {
   const [currentURL, setCurrentURL] = useState<string>();
   const [verificationLog, setVerificationLog] = useState('');
 
+  function prepareAndSetVerificationStatus(sanitizedUrl: string, extractedPageTitle: string) {
+    chrome.cookies.get({url: sanitizedUrl, name: extractedPageTitle}).then((cookie: any) => {
+      const badgeStatus = (!!cookie && cookie.value.toString()) || 'N/A';
+      const somethingBadHappened = '<div style="color: Black; font-size: larger;">Unknown error</div> Unexpected badge status: ' + badgeStatus;
+      const verificationStatusMessage = verificationStatusMap[badgeStatus] || somethingBadHappened;
+      setVerificationStatus(verificationStatusMessage);
+      });
+  }
+
   useEffect(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
       const tab = tabs[0];
       setCurrentURL(tab.url);
       if (!tab.url) {
@@ -42,20 +51,17 @@ const Popup = () => {
       if (!extractedPageTitle) {
         return;
       }
-      setPageTitle(extractedPageTitle);
       const sanitizedUrl = sanitizeWikiUrl(tab.url);
-      chrome.cookies.get({url: sanitizedUrl, name: extractedPageTitle}).then((cookie: any) => {
-        const badgeStatus = (!!cookie && cookie.value.toString()) || 'N/A';
-        const somethingBadHappened = '<div style="color: Black; font-size: larger;">Unknown error</div> Unexpected badge status: ' + badgeStatus;
-        const verificationStatusMessage = verificationStatusMap[badgeStatus] || somethingBadHappened;
-        setVerificationStatus(verificationStatusMessage);
-      });
-      chrome.storage.local.get(sanitizedUrl, (data) => {
-        if (!data[sanitizedUrl]) {
-          return;
-        }
-        formatDetailsAndSetVerificationLog(JSON.parse(data[sanitizedUrl]));
-      });
+
+      // TODO The following steps are almost identical to setPopupInfo.
+      // Refactor.
+      setPageTitle(extractedPageTitle);
+      prepareAndSetVerificationStatus(sanitizedUrl, extractedPageTitle);
+      const jsonData = await chrome.storage.local.get(sanitizedUrl);
+      if (!jsonData[sanitizedUrl]) {
+        return;
+      }
+      formatDetailsAndSetVerificationLog(JSON.parse(jsonData[sanitizedUrl]));
     });
   }, []);
 
@@ -65,11 +71,17 @@ const Popup = () => {
     setVerificationLog(out);
   }
 
+  function setPopupInfo(data: { [key: string]: any }) {
+    setPageTitle(data.title);
+    prepareAndSetVerificationStatus(data.sanitizedUrl, data.title)
+    formatDetailsAndSetVerificationLog(data)
+  }
+
   return (
     <>
       <div style={{ fontSize: "larger" }}>
         <button
-          onClick={() => verifyPage(pageTitle, formatDetailsAndSetVerificationLog)}
+          onClick={() => verifyPage(pageTitle, setPopupInfo)}
           style={{ float: "right" }}
         >
           Verify Page

@@ -211,6 +211,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
       // Update cookie
       chrome.cookies.set({url: sanitizedUrl, name: title, value: verificationStatus});
       const vd = {
+        sanitizedUrl,
         serverUrl: serverUrl,
         title: title,
         status: verificationStatus,
@@ -240,6 +241,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
       })
     }
     const verificationData = {
+      sanitizedUrl,
       serverUrl: serverUrl,
       title: title,
       status: verificationStatus,

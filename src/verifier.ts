@@ -107,7 +107,7 @@ export function setBadgeStatus(tabId: number, status: string) {
     badgeColor = "#F9D460";
     badgeText = "OUT";
   } else {
-    console.log(`UGH!!! ${status}`);
+    console.log(`Unexpected status: ${status}`);
     // Something wrong is happening
     badgeColor = "black";
     badgeText = "??";
@@ -289,6 +289,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
         [sanitizedUrl]: JSON.stringify(verificationData),
       });
       if (details && "error" in details) {
+        console.log("Verification error:", details.error);
         if (callback) {
           callback(verificationData);
         }

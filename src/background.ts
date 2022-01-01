@@ -1,4 +1,17 @@
-import { extractPageTitle, setInitialBadge, verifyPage, BadgeTextNA, BadgeTextNORECORD, setBadgeStatus, getUrlObj, setBadgeNA, setBadgeNORECORD, checkIfCacheIsUpToDate, getServerInfo, sanitizeWikiUrl } from "./verifier";
+import {
+  extractPageTitle,
+  setInitialBadge,
+  verifyPage,
+  BadgeTextNA,
+  BadgeTextNORECORD,
+  setBadgeStatus,
+  getUrlObj,
+  setBadgeNA,
+  setBadgeNORECORD,
+  checkIfCacheIsUpToDate,
+  getServerInfo,
+  sanitizeWikiUrl,
+} from "./verifier";
 
 // https://stackoverflow.com/questions/60545285/how-to-use-onupdated-and-onactivated-simultanously
 const processingTabId: { [key: number]: boolean } = {};
@@ -22,7 +35,7 @@ async function doInitialVerification(tab: any, doCheckCache: boolean = true) {
   }
 
   const [maybeServerUrl, _] = await getServerInfo(tab.id);
-  const serverUrl = maybeServerUrl || '';
+  const serverUrl = maybeServerUrl || "";
   if (!serverUrl) {
     setBadgeNA(tab.id);
     delete processingTabId[tab.id];
@@ -38,18 +51,25 @@ async function doInitialVerification(tab: any, doCheckCache: boolean = true) {
 
   const sanitizedUrl = sanitizeWikiUrl(tab.url);
 
-  chrome.cookies.get({url: sanitizedUrl, name: pageTitle}).then((cookie) => {
-    console.log("doInitialVerification, cookie", cookie ? cookie.value : cookie, pageTitle);
+  chrome.cookies.get({ url: sanitizedUrl, name: pageTitle }).then((cookie) => {
+    console.log(
+      "doInitialVerification, cookie",
+      cookie ? cookie.value : cookie,
+      pageTitle
+    );
     async function doVerifyFromScratch() {
-      await setInitialBadge(tab.id, serverUrl, pageTitle)
-      .then((badgeText) => {
+      await setInitialBadge(tab.id, serverUrl, pageTitle).then((badgeText) => {
         if (badgeText === BadgeTextNA) {
           delete processingTabId[tab.id];
           return;
         }
 
         if (badgeText === BadgeTextNORECORD) {
-          chrome.cookies.set({url: sanitizedUrl, name: pageTitle, value: 'NORECORD'});
+          chrome.cookies.set({
+            url: sanitizedUrl,
+            name: pageTitle,
+            value: "NORECORD",
+          });
           // Delete sync storage if previous data exist
           chrome.storage.local.remove(sanitizedUrl);
           chrome.storage.local.remove("verification_hash_" + sanitizedUrl);
@@ -63,26 +83,31 @@ async function doInitialVerification(tab: any, doCheckCache: boolean = true) {
     }
 
     if (cookie === null) {
-      doVerifyFromScratch()
+      doVerifyFromScratch();
     } else {
       if (!doCheckCache) {
         setBadgeStatus(tab.id, cookie.value.toString());
         delete processingTabId[tab.id];
-        return
+        return;
       }
       // Check if our stored verification info is outdated
-      checkIfCacheIsUpToDate(tab.id, pageTitle, sanitizedUrl, (isUpToDate: boolean) => {
-        if (isUpToDate) {
-          setBadgeStatus(tab.id, cookie.value.toString());
-          delete processingTabId[tab.id];
-        } else {
-          // TODO checkIfCacheIsUpToDate already makes an API call
-          // get_page_last_rev. We can reuse this output for setInitialBadge.
-          // No need to delete processingTabId because it will be done in
-          // doVerifyFromScratch()
-          doVerifyFromScratch()
+      checkIfCacheIsUpToDate(
+        tab.id,
+        pageTitle,
+        sanitizedUrl,
+        (isUpToDate: boolean) => {
+          if (isUpToDate) {
+            setBadgeStatus(tab.id, cookie.value.toString());
+            delete processingTabId[tab.id];
+          } else {
+            // TODO checkIfCacheIsUpToDate already makes an API call
+            // get_page_last_rev. We can reuse this output for setInitialBadge.
+            // No need to delete processingTabId because it will be done in
+            // doVerifyFromScratch()
+            doVerifyFromScratch();
+          }
         }
-      })
+      );
     }
   });
 }
@@ -97,7 +122,7 @@ function runIfTabIsActive(tab: any, callback: Function) {
 }
 
 chrome.tabs.onActivated.addListener((info) => {
-  chrome.tabs.get(info.tabId, function(tab) {
+  chrome.tabs.get(info.tabId, function (tab) {
     doInitialVerification(tab, false);
   });
 });

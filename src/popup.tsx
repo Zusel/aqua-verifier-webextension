@@ -3,7 +3,14 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import Clipboard from "clipboard";
 
-import { verifyPage, extractPageTitle, BadgeColorNA, BadgeColorBlue, getUrlObj, sanitizeWikiUrl } from "./verifier";
+import {
+  verifyPage,
+  extractPageTitle,
+  BadgeColorNA,
+  BadgeColorBlue,
+  getUrlObj,
+  sanitizeWikiUrl,
+} from "./verifier";
 // Not yet typed
 // @ts-ignore
 import { formatPageInfo2HTML } from "data-accounting-external-verifier";
@@ -12,69 +19,95 @@ import { formatPageInfo2HTML } from "data-accounting-external-verifier";
 const verificationStatusMap: { [key: string]: string } = {
   // See the color in verifier.ts
   // Apple
-  'VERIFIED': '<div style="color: #65B045; font-size: larger;">Page integrity validated</div> Information on this page has not been tampered with.',
+  VERIFIED:
+    '<div style="color: #65B045; font-size: larger;">Page integrity validated</div> Information on this page has not been tampered with.',
   // Fire Engine Red
-  'INVALID': '<div style="color: #FF0018; font-size: larger;">Page integrity verification failed</div> Information on this page can\'t be trusted.',
-  'NORECORD': '<div style="color: ' + BadgeColorBlue + '; font-size: larger;">Data accounting supported but no record available</div> Information on this page might have been tampered.',
-  'N/A': '<div style="color: ' + BadgeColorNA + '; font-size: larger;">No record available</div> Information on this page might have been tampered.',
+  INVALID:
+    '<div style="color: #FF0018; font-size: larger;">Page integrity verification failed</div> Information on this page can\'t be trusted.',
+  NORECORD:
+    '<div style="color: ' +
+    BadgeColorBlue +
+    '; font-size: larger;">Data accounting supported but no record available</div> Information on this page might have been tampered.',
+  "N/A":
+    '<div style="color: ' +
+    BadgeColorNA +
+    '; font-size: larger;">No record available</div> Information on this page might have been tampered.',
   // Fire Engine Red
-  'ERROR': '<div style="color: #FF0018; font-size: larger;">Error</div> An error has occured.',
-}
+  ERROR:
+    '<div style="color: #FF0018; font-size: larger;">Error</div> An error has occured.',
+};
 
 const clipboard = new Clipboard(".clipboard-button");
 
 const Popup = () => {
-  const [pageTitle, setPageTitle] = useState('');
-  const [verificationStatus, setVerificationStatus] = useState('');
+  const [pageTitle, setPageTitle] = useState("");
+  const [verificationStatus, setVerificationStatus] = useState("");
   const [currentURL, setCurrentURL] = useState<string>();
-  const [verificationLog, setVerificationLog] = useState('');
+  const [verificationLog, setVerificationLog] = useState("");
 
-  function prepareAndSetVerificationStatus(sanitizedUrl: string, extractedPageTitle: string) {
-    chrome.cookies.get({url: sanitizedUrl, name: extractedPageTitle}).then((cookie: any) => {
-      const badgeStatus = (!!cookie && cookie.value.toString()) || 'N/A';
-      const somethingBadHappened = '<div style="color: Black; font-size: larger;">Unknown error</div> Unexpected badge status: ' + badgeStatus;
-      const verificationStatusMessage = verificationStatusMap[badgeStatus] || somethingBadHappened;
-      setVerificationStatus(verificationStatusMessage);
+  function prepareAndSetVerificationStatus(
+    sanitizedUrl: string,
+    extractedPageTitle: string
+  ) {
+    chrome.cookies
+      .get({ url: sanitizedUrl, name: extractedPageTitle })
+      .then((cookie: any) => {
+        const badgeStatus = (!!cookie && cookie.value.toString()) || "N/A";
+        const somethingBadHappened =
+          '<div style="color: Black; font-size: larger;">Unknown error</div> Unexpected badge status: ' +
+          badgeStatus;
+        const verificationStatusMessage =
+          verificationStatusMap[badgeStatus] || somethingBadHappened;
+        setVerificationStatus(verificationStatusMessage);
       });
   }
 
   useEffect(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
-      const tab = tabs[0];
-      setCurrentURL(tab.url);
-      if (!tab.url) {
-        return;
-      }
+    chrome.tabs.query(
+      { active: true, currentWindow: true },
+      async function (tabs) {
+        const tab = tabs[0];
+        setCurrentURL(tab.url);
+        if (!tab.url) {
+          return;
+        }
 
-      const urlObj = getUrlObj(tab);
-      const extractedPageTitle = extractPageTitle(urlObj);
-      if (!extractedPageTitle) {
-        return;
-      }
-      const sanitizedUrl = sanitizeWikiUrl(tab.url);
+        const urlObj = getUrlObj(tab);
+        const extractedPageTitle = extractPageTitle(urlObj);
+        if (!extractedPageTitle) {
+          return;
+        }
+        const sanitizedUrl = sanitizeWikiUrl(tab.url);
 
-      // TODO The following steps are almost identical to setPopupInfo.
-      // Refactor.
-      setPageTitle(extractedPageTitle);
-      prepareAndSetVerificationStatus(sanitizedUrl, extractedPageTitle);
-      const jsonData = await chrome.storage.local.get(sanitizedUrl);
-      if (!jsonData[sanitizedUrl]) {
-        return;
+        // TODO The following steps are almost identical to setPopupInfo.
+        // Refactor.
+        setPageTitle(extractedPageTitle);
+        prepareAndSetVerificationStatus(sanitizedUrl, extractedPageTitle);
+        const jsonData = await chrome.storage.local.get(sanitizedUrl);
+        if (!jsonData[sanitizedUrl]) {
+          return;
+        }
+        formatDetailsAndSetVerificationLog(JSON.parse(jsonData[sanitizedUrl]));
       }
-      formatDetailsAndSetVerificationLog(JSON.parse(jsonData[sanitizedUrl]));
-    });
+    );
   }, []);
 
   function formatDetailsAndSetVerificationLog(data: { [key: string]: any }) {
     const verbose = false;
-    const out = formatPageInfo2HTML(data.serverUrl, data.title, data.status, data.details, verbose);
+    const out = formatPageInfo2HTML(
+      data.serverUrl,
+      data.title,
+      data.status,
+      data.details,
+      verbose
+    );
     setVerificationLog(out);
   }
 
   function setPopupInfo(data: { [key: string]: any }) {
     setPageTitle(data.title);
-    prepareAndSetVerificationStatus(data.sanitizedUrl, data.title)
-    formatDetailsAndSetVerificationLog(data)
+    prepareAndSetVerificationStatus(data.sanitizedUrl, data.title);
+    formatDetailsAndSetVerificationLog(data);
   }
 
   return (
@@ -86,13 +119,14 @@ const Popup = () => {
         >
           Verify Page
         </button>
-        <div dangerouslySetInnerHTML={{ __html: verificationStatus}}>
-        </div>
+        <div dangerouslySetInnerHTML={{ __html: verificationStatus }}></div>
         <ul style={{ minWidth: "700px" }}>
-          <li>Current Page Title: {pageTitle ? pageTitle : "<DA not supported or is not a wiki page>"}</li>
+          <li>
+            Current Page Title:{" "}
+            {pageTitle ? pageTitle : "<DA not supported or is not a wiki page>"}
+          </li>
         </ul>
-        <div dangerouslySetInnerHTML={{ __html: verificationLog}}>
-        </div>
+        <div dangerouslySetInnerHTML={{ __html: verificationLog }}></div>
       </div>
     </>
   );

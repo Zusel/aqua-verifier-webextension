@@ -6,13 +6,13 @@ import { verifyPage as externalVerifierVerifyPage, apiVersion as externalVerifie
 
 const apiVersion = "0.3.0";
 
-export const BadgeTextNA = 'N/A';
+export const BadgeTextNA = "N/A";
 // Dark gray custom picked
-export const BadgeColorNA = '#ABABAD';
-export const BadgeTextNORECORD = 'NR';
+export const BadgeColorNA = "#ABABAD";
+export const BadgeTextNORECORD = "NR";
 // Color taken from https://www.schemecolor.com/easy-to-use-colors.php
 // Blueberry
-export const BadgeColorBlue = '#427FED';
+export const BadgeColorBlue = "#427FED";
 
 // TODO import from external verifier.
 const ERROR_VERIFICATION_STATUS = "ERROR";
@@ -20,30 +20,33 @@ const ERROR_VERIFICATION_STATUS = "ERROR";
 type verificationDetailsOKT = {
   verification_hashes: string[];
   revision_details: any[];
-}
+};
 
 type verificationDetailsErrorT = {
   error: string;
-}
+};
 
-type verificationDetailsT = verificationDetailsOKT | verificationDetailsErrorT | null
+type verificationDetailsT =
+  | verificationDetailsOKT
+  | verificationDetailsErrorT
+  | null;
 
 function isEmpty(obj: any) {
   return Object.keys(obj).length === 0;
 }
 
 function adaptiveGet(url: string) {
-  return url.startsWith('https://') ? https.get : http.get
+  return url.startsWith("https://") ? https.get : http.get;
 }
 
 export function getUrlObj(tab: any) {
-  return tab.url ? new URL(tab.url): null;
+  return tab.url ? new URL(tab.url) : null;
 }
 
 export function sanitizeWikiUrl(url: string) {
   // E.g. original: http://localhost:9352/index.php?title=Main_Page&action=history.
   // Sanitized: http://localhost:9352/.
-  return url.split('index.php')[0];
+  return url.split("index.php")[0];
 }
 
 export function extractPageTitle(urlObj: URL | null) {
@@ -51,24 +54,24 @@ export function extractPageTitle(urlObj: URL | null) {
   // the DataAccounting repo, in
   // modules/ext.DataAccounting.signMessage/index.js.
   if (!urlObj) {
-    return '';
+    return "";
   }
-  if (!urlObj.pathname.startsWith('/index.php')) {
-    return '';
+  if (!urlObj.pathname.startsWith("/index.php")) {
+    return "";
   }
-  let titleUrlForm
+  let titleUrlForm;
   if (urlObj.searchParams.has("title")) {
     // If there is title param, return it instead.
     titleUrlForm = urlObj.searchParams.get("title");
   } else {
-    if (!urlObj.pathname.startsWith('/index.php/')) {
-      return '';
+    if (!urlObj.pathname.startsWith("/index.php/")) {
+      return "";
     }
     // The first 11 chars are '/index.php/', which we skip.
     titleUrlForm = urlObj.pathname.slice(11);
   }
   if (!titleUrlForm) {
-    return '';
+    return "";
   }
 
   // Convert from Mediawiki url title to page title.
@@ -79,56 +82,60 @@ export function extractPageTitle(urlObj: URL | null) {
   // - mUrlform: url encoded text form with underscores
   // We weant to return the mTextform.
   const titleDbkeyform = decodeURIComponent(titleUrlForm);
-  return titleDbkeyform.replace(/_/g, ' ');
+  return titleDbkeyform.replace(/_/g, " ");
 }
 
 export function setBadgeStatus(tabId: number, status: string) {
   let badgeColor, badgeText;
-  if (status === 'VERIFIED') {
+  if (status === "VERIFIED") {
     // From https://www.schemecolor.com/easy-to-use-colors.php
     // Apple
     // (actually it is greenish in color, not red)
-    badgeColor = '#65B045';
-    badgeText = 'DA';
-  } else if (status === 'INVALID') {
+    badgeColor = "#65B045";
+    badgeText = "DA";
+  } else if (status === "INVALID") {
     // From https://www.schemecolor.com/no-news-is-good.php
     // Fire Engine Red
-    badgeColor = '#FF0018';
-    badgeText = 'DA';
-  } else if (status === 'NORECORD') {
+    badgeColor = "#FF0018";
+    badgeText = "DA";
+  } else if (status === "NORECORD") {
     badgeColor = BadgeColorBlue;
-    badgeText = 'NR';
-  } else if (status === 'API_MISMATCH') {
+    badgeText = "NR";
+  } else if (status === "API_MISMATCH") {
     // From https://www.schemecolor.com/advent-of-the-season.php
     // Naples Yellow
-    badgeColor = '#F9D460';
-    badgeText = 'OUT';
+    badgeColor = "#F9D460";
+    badgeText = "OUT";
   } else {
-    console.log(`UGH!!! ${status}`)
+    console.log(`UGH!!! ${status}`);
     // Something wrong is happening
-    badgeColor = 'black';
-    badgeText = '??';
+    badgeColor = "black";
+    badgeText = "??";
   }
-  chrome.action.setBadgeBackgroundColor({tabId: tabId, color: badgeColor});
-  chrome.action.setBadgeText({tabId: tabId, text: badgeText });
+  chrome.action.setBadgeBackgroundColor({ tabId: tabId, color: badgeColor });
+  chrome.action.setBadgeText({ tabId: tabId, text: badgeText });
 }
 
 export function setBadgeNA(tabId: number) {
-  chrome.action.setBadgeBackgroundColor({tabId: tabId, color: BadgeColorNA});
+  chrome.action.setBadgeBackgroundColor({ tabId: tabId, color: BadgeColorNA });
   chrome.action.setBadgeText({ tabId: tabId, text: BadgeTextNA });
 }
 
 export function setBadgeNORECORD(tabId: number) {
-  chrome.action.setBadgeBackgroundColor({tabId: tabId, color: BadgeColorBlue});
+  chrome.action.setBadgeBackgroundColor({
+    tabId: tabId,
+    color: BadgeColorBlue,
+  });
   chrome.action.setBadgeText({ tabId: tabId, text: BadgeTextNORECORD });
 }
 
-
-export function getServerInfo(tabId: number): Promise<[string | null, string | null]> {
+export function getServerInfo(
+  tabId: number
+): Promise<[string | null, string | null]> {
   return new Promise((resolve, reject) => {
     chrome.scripting.executeScript(
       {
-        target: {tabId: tabId},
+        target: { tabId: tabId },
         func: () => {
           function getMeta(name: string) {
             const meta = document.querySelector(`meta[name="${name}"]`);
@@ -145,17 +152,21 @@ export function getServerInfo(tabId: number): Promise<[string | null, string | n
       },
       (injectionResults) => {
         const result = injectionResults[0].result;
-        resolve(result === 'null' ? null : result);
+        resolve(result === "null" ? null : result);
       }
     );
   });
 }
 
-export async function setInitialBadge(tabId: number, serverUrl: string, pageTitle: string) {
+export async function setInitialBadge(
+  tabId: number,
+  serverUrl: string,
+  pageTitle: string
+) {
   const urlForChecking = `${serverUrl}/rest.php/data_accounting/get_page_last_rev/${pageTitle}`;
   const promise = new Promise((resolve, reject) => {
     adaptiveGet(urlForChecking)(urlForChecking, (response) => {
-      response.on('data', (data) => {
+      response.on("data", (data) => {
         const respText = data.toString();
         let badgeText, badgeColor;
         if (respText != "{}") {
@@ -164,122 +175,157 @@ export async function setInitialBadge(tabId: number, serverUrl: string, pageTitl
           badgeText = BadgeTextNORECORD;
         }
         badgeColor = BadgeColorBlue;
-        chrome.action.setBadgeBackgroundColor({tabId: tabId, color: badgeColor});
-        chrome.action.setBadgeText({tabId: tabId, text: badgeText });
+        chrome.action.setBadgeBackgroundColor({
+          tabId: tabId,
+          color: badgeColor,
+        });
+        chrome.action.setBadgeText({ tabId: tabId, text: badgeText });
         console.log("setInitialBadge", badgeText);
         resolve(badgeText);
       });
-      response.on('error', (e) => reject('ERROR'));
+      response.on("error", (e) => reject("ERROR"));
     });
   });
   return promise;
 }
 
 export function verifyPage(title: string, callback: Function | null = null) {
-  chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
-    const tab = tabs[0];
-    let serverUrl: string | null = "N/A";
-    let serverApiVersion: string | null = "N/AA;"
-    let verificationStatus = "N/A";
-    let details: verificationDetailsT = null;
-    if (!tab.id) {
-      return;
-    }
-    if (!tab.url) {
-      return;
-    }
-    chrome.action.setBadgeText({tabId: tab.id, text: '⏳' });
-    const verbose = false;
-    [serverUrl, serverApiVersion] = await getServerInfo(tab.id);
-    if (!serverUrl) {
-      chrome.action.setBadgeText({tabId: tab.id, text: 'N/A' });
-      return;
-    }
-    if (title === '') {
-      // If we get to this point, we know that DA is supported in the domain,
-      // but the page title is empty.
-      setBadgeStatus(tab.id, 'NORECORD');
-      return;
-    }
+  chrome.tabs.query(
+    { active: true, currentWindow: true },
+    async function (tabs) {
+      const tab = tabs[0];
+      let serverUrl: string | null = "N/A";
+      let serverApiVersion: string | null = "N/AA;";
+      let verificationStatus = "N/A";
+      let details: verificationDetailsT = null;
+      if (!tab.id) {
+        return;
+      }
+      if (!tab.url) {
+        return;
+      }
+      chrome.action.setBadgeText({ tabId: tab.id, text: "⏳" });
+      const verbose = false;
+      [serverUrl, serverApiVersion] = await getServerInfo(tab.id);
+      if (!serverUrl) {
+        chrome.action.setBadgeText({ tabId: tab.id, text: "N/A" });
+        return;
+      }
+      if (title === "") {
+        // If we get to this point, we know that DA is supported in the domain,
+        // but the page title is empty.
+        setBadgeStatus(tab.id, "NORECORD");
+        return;
+      }
 
-    const sanitizedUrl = sanitizeWikiUrl(tab.url);
+      const sanitizedUrl = sanitizeWikiUrl(tab.url);
 
-    // Now we check the API versions.
-    if (!(apiVersion === externalVerifierApiVersion && apiVersion === serverApiVersion)) {
-      setBadgeStatus(tab.id, 'API_MISMATCH');
-      verificationStatus = ERROR_VERIFICATION_STATUS;
-      // Update cookie
-      chrome.cookies.set({url: sanitizedUrl, name: title, value: verificationStatus});
-      const vd = {
+      // Now we check the API versions.
+      if (
+        !(
+          apiVersion === externalVerifierApiVersion &&
+          apiVersion === serverApiVersion
+        )
+      ) {
+        setBadgeStatus(tab.id, "API_MISMATCH");
+        verificationStatus = ERROR_VERIFICATION_STATUS;
+        // Update cookie
+        chrome.cookies.set({
+          url: sanitizedUrl,
+          name: title,
+          value: verificationStatus,
+        });
+        const vd = {
+          sanitizedUrl,
+          serverUrl: serverUrl,
+          title: title,
+          status: verificationStatus,
+          details: {
+            error: `API version mismatch. Supported version: ${apiVersion}. Library version: ${externalVerifierApiVersion}. Server version: ${serverApiVersion}<br>Please update VerifyPage.`,
+          },
+        };
+        // Cache verification data in local storage
+        chrome.storage.local.set({ [sanitizedUrl]: JSON.stringify(vd) });
+        if (callback) {
+          callback(vd);
+        }
+        return;
+      }
+
+      const doVerifyMerkleProof = true;
+      [verificationStatus, details] = await externalVerifierVerifyPage(
+        title,
+        serverUrl,
+        verbose,
+        doVerifyMerkleProof,
+        null
+      );
+      setBadgeStatus(tab.id, verificationStatus);
+      // Runtime check that the type is verificationDetailsOKT.
+      if (!!details && "revision_details" in details) {
+        // PERF We delete the Merkle proof here to save storage space.
+        details.revision_details.forEach((d) => {
+          if (!d.data.witness) {
+            return;
+          }
+          delete d.data.witness.structured_merkle_proof;
+        });
+      }
+      const verificationData = {
         sanitizedUrl,
         serverUrl: serverUrl,
         title: title,
         status: verificationStatus,
-        details: {"error": `API version mismatch. Supported version: ${apiVersion}. Library version: ${externalVerifierApiVersion}. Server version: ${serverApiVersion}<br>Please update VerifyPage.`}
-      }
+        details: details,
+      };
+      // Update cookie
+      chrome.cookies.set({
+        url: sanitizedUrl,
+        name: title,
+        value: verificationStatus,
+      });
       // Cache verification data in local storage
-      chrome.storage.local.set(
-        {[sanitizedUrl]: JSON.stringify(vd)}
-      );
-      if (callback) {
-        callback(vd);
-      }
-      return;
-    }
-
-    const doVerifyMerkleProof = true;
-    [verificationStatus, details] = await externalVerifierVerifyPage(title, serverUrl, verbose, doVerifyMerkleProof, null);
-    setBadgeStatus(tab.id, verificationStatus)
-    // Runtime check that the type is verificationDetailsOKT.
-    if (!!details && ("revision_details" in details)) {
-      // PERF We delete the Merkle proof here to save storage space.
-      details.revision_details.forEach(d => {
-        if (!d.data.witness) {
-          return
+      chrome.storage.local.set({
+        [sanitizedUrl]: JSON.stringify(verificationData),
+      });
+      if (details && "error" in details) {
+        if (callback) {
+          callback(verificationData);
         }
-        delete d.data.witness.structured_merkle_proof
-      })
-    }
-    const verificationData = {
-      sanitizedUrl,
-      serverUrl: serverUrl,
-      title: title,
-      status: verificationStatus,
-      details: details
-    };
-    // Update cookie
-    chrome.cookies.set({url: sanitizedUrl, name: title, value: verificationStatus});
-    // Cache verification data in local storage
-    chrome.storage.local.set(
-      {[sanitizedUrl]: JSON.stringify(verificationData)}
-    );
-    if (details && "error" in details) {
+        return;
+      }
+      // Also store the last verification hash.
+      // We use this info to check if the page has been updated since we
+      // last verify it. If so, we rerun the verification process
+      // automatically.
+      if (
+        !details ||
+        !details.revision_details ||
+        details.revision_details.length === 0
+      ) {
+        if (callback) {
+          callback(verificationData);
+        }
+        return;
+      }
+      const lastDetail =
+        details.revision_details[details.revision_details.length - 1];
+      chrome.storage.local.set({
+        ["verification_hash_" + sanitizedUrl]: lastDetail.verification_hash,
+      });
       if (callback) {
         callback(verificationData);
       }
-      return;
     }
-    // Also store the last verification hash.
-    // We use this info to check if the page has been updated since we
-    // last verify it. If so, we rerun the verification process
-    // automatically.
-    if (!details || !details.revision_details || details.revision_details.length === 0) {
-      if (callback) {
-        callback(verificationData);
-      }
-      return;
-    }
-    const lastDetail = details.revision_details[details.revision_details.length - 1];
-    chrome.storage.local.set(
-      {["verification_hash_" + sanitizedUrl]: lastDetail.verification_hash}
-    );
-    if (callback) {
-      callback(verificationData);
-    }
-  });
+  );
 }
 
-export async function checkIfCacheIsUpToDate(tabId: number, pageTitle: string, sanitizedUrl: string, callback: Function) {
+export async function checkIfCacheIsUpToDate(
+  tabId: number,
+  pageTitle: string,
+  sanitizedUrl: string,
+  callback: Function
+) {
   // Check if our stored verification info is outdated
   const [serverUrl, _] = await getServerInfo(tabId);
   if (!serverUrl) {
@@ -289,32 +335,34 @@ export async function checkIfCacheIsUpToDate(tabId: number, pageTitle: string, s
   }
   const urlForChecking = `${serverUrl}/rest.php/data_accounting/get_page_last_rev/${pageTitle}`;
   adaptiveGet(urlForChecking)(urlForChecking, (response) => {
-      response.on('data', (data) => {
-        const actual = JSON.parse(data);
-        const key = "verification_hash_" + sanitizedUrl
-        chrome.storage.local.get(key, (d) => {
-          let isUpToDate = false;
-          if (d[key]) {
-            const expectedVH = d[key];
-            isUpToDate = expectedVH === actual.verification_hash;
-            if (isEmpty(actual)) {
-              // This is a corner case.
-              // If the actual page has the verification info removed, but the
-              // local storage has the old version with non empty verification
-              // remove, we then remove it from local storage.
-              chrome.storage.local.remove(sanitizedUrl, () => {
-                chrome.storage.local.remove(key, () => {
-                  callback(isUpToDate)
-                })
-              })
-            } else {
-              callback(isUpToDate)
-            }
+    response.on("data", (data) => {
+      const actual = JSON.parse(data);
+      const key = "verification_hash_" + sanitizedUrl;
+      chrome.storage.local.get(key, (d) => {
+        let isUpToDate = false;
+        if (d[key]) {
+          const expectedVH = d[key];
+          isUpToDate = expectedVH === actual.verification_hash;
+          if (isEmpty(actual)) {
+            // This is a corner case.
+            // If the actual page has the verification info removed, but the
+            // local storage has the old version with non empty verification
+            // remove, we then remove it from local storage.
+            chrome.storage.local.remove(sanitizedUrl, () => {
+              chrome.storage.local.remove(key, () => {
+                callback(isUpToDate);
+              });
+            });
           } else {
-            callback(isUpToDate)
+            callback(isUpToDate);
           }
-        });
+        } else {
+          callback(isUpToDate);
+        }
       });
-      response.on('error', (e) => {throw e});
+    });
+    response.on("error", (e) => {
+      throw e;
+    });
   });
 }

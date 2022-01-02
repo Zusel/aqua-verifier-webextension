@@ -279,8 +279,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
 
       const doVerifyMerkleProof = true;
       [verificationStatus, details] = await externalVerifierVerifyPage(
-        title,
-        serverUrl,
+        {title, server: serverUrl},
         verbose,
         doVerifyMerkleProof,
         null

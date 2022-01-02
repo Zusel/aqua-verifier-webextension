@@ -10,32 +10,11 @@ import {
   BadgeColorBlue,
   getUrlObj,
   sanitizeWikiUrl,
+  verificationStatusMap,
 } from "./verifier";
 // Not yet typed
 // @ts-ignore
 import { formatPageInfo2HTML } from "data-accounting-external-verifier";
-
-// TODO this is totally not idiomatic.
-const verificationStatusMap: { [key: string]: string } = {
-  // See the color in verifier.ts
-  // Apple
-  VERIFIED:
-    '<div style="color: #65B045; font-size: larger;">Page integrity validated</div> Information on this page has not been tampered with.',
-  // Fire Engine Red
-  INVALID:
-    '<div style="color: #FF0018; font-size: larger;">Page integrity verification failed</div> Information on this page can\'t be trusted.',
-  NORECORD:
-    '<div style="color: ' +
-    BadgeColorBlue +
-    '; font-size: larger;">Data accounting supported but no record available</div> Information on this page might have been tampered.',
-  "N/A":
-    '<div style="color: ' +
-    BadgeColorNA +
-    '; font-size: larger;">No record available</div> Information on this page might have been tampered.',
-  // Fire Engine Red
-  ERROR:
-    '<div style="color: #FF0018; font-size: larger;">Error</div> An error has occured.',
-};
 
 const clipboard = new Clipboard(".clipboard-button");
 

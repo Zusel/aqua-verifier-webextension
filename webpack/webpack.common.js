@@ -7,6 +7,7 @@ module.exports = {
     entry: {
       popup: path.join(srcDir, 'popup.tsx'),
       background: path.join(srcDir, 'background.ts'),
+      offline_verification: path.join(srcDir, 'offline_verification.tsx'),
     },
     output: {
         path: path.join(__dirname, "../dist/js"),

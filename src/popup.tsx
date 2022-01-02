@@ -92,12 +92,20 @@ const Popup = () => {
   return (
     <>
       <div style={{ fontSize: "larger" }}>
-        <button
-          onClick={() => verifyPage(pageTitle, setPopupInfo)}
-          style={{ float: "right" }}
-        >
-          Verify Page
-        </button>
+        <div style={{ float: "right" }}>
+          <button
+            onClick={() => chrome.tabs.create({ url: chrome.runtime.getURL("offline_verification.html") })}
+          >
+            Offline verifier
+          </button>
+          &nbsp;
+          <button
+            onClick={() => verifyPage(pageTitle, setPopupInfo)}
+          >
+            Verify Page
+          </button>
+        </div>
+
         <div dangerouslySetInnerHTML={{ __html: verificationStatus }}></div>
         <ul style={{ minWidth: "700px" }}>
           <li>

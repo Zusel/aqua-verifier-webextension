@@ -2,6 +2,10 @@ import * as http from "http";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import Clipboard from "clipboard";
+import wtf from "wtf_wikipedia";
+// Not yet typed
+// @ts-ignore
+import wtfPluginHtml from "wtf-plugin-html";
 
 import {
   verifyPage,
@@ -17,12 +21,14 @@ import {
 import { verifyPage as externalVerifierVerifyPage, formatPageInfo2HTML } from "data-accounting-external-verifier";
 
 const clipboard = new Clipboard(".clipboard-button");
+wtf.extend(wtfPluginHtml);
 
 const OfflineVerification = () => {
   const [pageTitle, setPageTitle] = useState("");
   const [verificationStatus, setVerificationStatus] = useState("");
   const [currentURL, setCurrentURL] = useState<string>();
   const [verificationLog, setVerificationLog] = useState("");
+  const [wikiPage, setWikiPage] = useState("");
 
   function prepareAndSetVerificationStatus(
     status: string
@@ -53,6 +59,16 @@ const OfflineVerification = () => {
     formatDetailsAndSetVerificationLog(data);
   }
 
+  function getLastRevisionHtml(revisions: { [key: string]: any }) {
+    const vhs = Object.keys(revisions);
+    const lastVH = vhs[vhs.length - 1];
+    const lastRevision = revisions[lastVH];
+    const wikitext = lastRevision.content.content["main"];
+    // @ts-ignore
+    const wikiHtml = wtf(wikitext).html();
+    return wikiHtml
+  }
+
   function offlineVerifyPage() {
     const filesElements = document.getElementById("file") as HTMLInputElement;
     if (!(filesElements && filesElements.files && filesElements.files[0])) {
@@ -66,6 +82,11 @@ const OfflineVerification = () => {
       const verbose = false;
       const doVerifyMerkleProof = true;
       const offline_data = JSON.parse(e.target.result as string);
+      // This is for displaying the content.
+      // TODO move this to be later once the deletion of revision content from
+      // details has been removed.
+      const lastRevisionHtml = getLastRevisionHtml(offline_data.revisions);
+
       const [verificationStatus, details] = await externalVerifierVerifyPage(
         {offline_data},
         verbose,
@@ -81,6 +102,7 @@ const OfflineVerification = () => {
         details: details,
       };
       setPopupInfo(verificationStatus, verificationData);
+      setWikiPage(lastRevisionHtml);
     }
     reader.readAsText(file);
   }
@@ -106,6 +128,8 @@ const OfflineVerification = () => {
           </li>
         </ul>
         <div dangerouslySetInnerHTML={{ __html: verificationLog }}></div>
+        <hr/>
+        <div dangerouslySetInnerHTML={{ __html: wikiPage }}></div>
       </div>
     </>
   );

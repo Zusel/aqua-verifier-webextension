@@ -13,6 +13,9 @@ export const BadgeTextNORECORD = "NR";
 // Color taken from https://www.schemecolor.com/easy-to-use-colors.php
 // Blueberry
 export const BadgeColorBlue = "#427FED";
+// From https://www.schemecolor.com/advent-of-the-season.php
+// Naples Yellow
+export const BadgeColorYellow = "#F9D460";
 
 // TODO import from external verifier.
 const ERROR_VERIFICATION_STATUS = "ERROR";
@@ -47,6 +50,10 @@ export const verificationStatusMap: { [key: string]: string } = {
     '<div style="color: ' +
     BadgeColorBlue +
     '; font-size: larger;">Data accounting supported but no record available</div> Information on this page might have been tampered.',
+  API_MISMATCH:
+    '<div style="color: ' +
+    BadgeColorYellow +
+    '; font-size: larger;">Mismatch</div> Incompatible version.',
   "N/A":
     '<div style="color: ' +
     BadgeColorNA +
@@ -127,9 +134,7 @@ export function setBadgeStatus(tabId: number, status: string) {
     badgeColor = BadgeColorBlue;
     badgeText = "NR";
   } else if (status === "API_MISMATCH") {
-    // From https://www.schemecolor.com/advent-of-the-season.php
-    // Naples Yellow
-    badgeColor = "#F9D460";
+    badgeColor = BadgeColorYellow;
     badgeText = "OUT";
   } else {
     console.log(`Unexpected status: ${status}`);
@@ -253,7 +258,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
         )
       ) {
         setBadgeStatus(tab.id, "API_MISMATCH");
-        verificationStatus = ERROR_VERIFICATION_STATUS;
+        verificationStatus = "API_MISMATCH";
         // Update cookie
         chrome.cookies.set({
           url: sanitizedUrl,

@@ -60,3 +60,15 @@ You can also load a pre-build version of the extension.
 
 ## Test
 `npx jest` or `npm run test`
+
+## Troubleshooting
+
+In npm v17.x we expect the following error while running `npm run build`:
+```
+Error: --openssl-legacy-provider is not allowed in NODE_OPTIONS
+```
+to solve it, put this in your .bashrc
+```sh
+export NODE_OPTIONS=--openssl-legacy-provider
+```
+

@@ -137,19 +137,25 @@ const OfflineVerification = () => {
       }
       const verbose = false;
       const doVerifyMerkleProof = true;
-      const offline_data = JSON.parse(e.target.result as string);
+      const parsedExport = JSON.parse(e.target.result as string);
+      if (!("pages" in parsedExport)) {
+        return;
+      }
+      // TODO we currently only verifies 1 page from the json data.
+      // Generalize this
+      const firstPage = parsedExport.pages[0];
       // This is for displaying the content.
       // TODO move this to be later once the deletion of revision content from
       // details has been removed.
-      const lastRevisionHtml = getLastRevisionHtml(offline_data.revisions);
+      const lastRevisionHtml = getLastRevisionHtml(firstPage.revisions);
 
       const [verificationStatus, details] = await externalVerifierVerifyPage(
-        {offline_data},
+        {offline_data: firstPage},
         verbose,
         doVerifyMerkleProof,
         null
       );
-      const title = offline_data.title;
+      const title = firstPage.title;
       const serverUrl = "http://offline_verify_page"
       const verificationData = {
         serverUrl,

@@ -23,6 +23,28 @@ import { verifyPage as externalVerifierVerifyPage, formatPageInfo2HTML } from "d
 const clipboard = new Clipboard(".clipboard-button");
 wtf.extend(wtfPluginHtml);
 
+// See https://stackoverflow.com/questions/16245767/creating-a-blob-from-a-base64-string-in-javascript.
+// TODO Maybe it'd be much simpler using fetch(); see the other answers in the URL above.
+const b64toBlob = (b64Data: string, contentType = '', sliceSize = 512) => {
+  const byteCharacters = atob(b64Data);
+  const byteArrays = [];
+
+  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+    const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+    const byteNumbers = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    byteArrays.push(byteArray);
+  }
+
+  const blob = new Blob(byteArrays, {type: contentType});
+  return blob;
+}
+
 const OfflineVerification = () => {
   const [pageTitle, setPageTitle] = useState("");
   const [verificationStatus, setVerificationStatus] = useState("");
@@ -66,7 +88,19 @@ const OfflineVerification = () => {
     const wikitext = lastRevision.content.content["main"];
     // @ts-ignore
     const wikiHtml = wtf(wikitext).html();
-    return wikiHtml
+    let fileContent = "";
+    if ("file" in lastRevision.content) {
+      // If there is a file, create a download link.
+      if (lastRevision.content.file.filename.endsWith(".png")) {
+        fileContent = "<img src='data:image/png;base64," + lastRevision.content.file.data + "'>";
+      } else {
+        const blob = b64toBlob(lastRevision.content.file.data, "audio/mp3");
+        // The in-RAM file will be garbage-collected once the tab is closed.
+        const blobUrl = URL.createObjectURL(blob);
+        fileContent = "<a href='" + blobUrl + "' target='_blank'>Access file</a>";
+      }
+    }
+    return wikiHtml + fileContent;
   }
 
   function offlineVerifyPage() {

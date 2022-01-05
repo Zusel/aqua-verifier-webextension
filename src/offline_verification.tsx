@@ -6,7 +6,8 @@ import wtf from "wtf_wikipedia";
 // Not yet typed
 // @ts-ignore
 import wtfPluginHtml from "wtf-plugin-html";
-// @ts-ignore
+// This is taking 154 KiB space of the vendor.js bundle strangely.
+// TODO investigate.
 import Mime from "mime-types";
 
 import {
@@ -111,16 +112,14 @@ const OfflineVerification = () => {
     if ("file" in lastRevision.content) {
       // If there is a file, create a download link.
       const mimeType = Mime.lookup(lastRevision.content.file.filename) || "application/octet-stream";
-      const fileExtension = Mime.extension(mimeType);
-
+      const fileExtension = Mime.extension(mimeType) || "unknown";
+      const blob = b64toBlob(lastRevision.content.file.data, mimeType);
+      // The in-RAM file will be garbage-collected once the tab is closed.
+      const blobUrl = URL.createObjectURL(blob);
+      fileContent = `<a href='${blobUrl}' target='_blank' download='${lastRevision.content.file.filename}'>Access file</a>`;
       if (supportedImageExtensions.includes(fileExtension)) {
         // If the file is an image supported in HTML, display it.
-        fileContent = `<img src='data:${mimeType};base64,` + lastRevision.content.file.data + "'>";
-      } else {
-        const blob = b64toBlob(lastRevision.content.file.data, mimeType);
-        // The in-RAM file will be garbage-collected once the tab is closed.
-        const blobUrl = URL.createObjectURL(blob);
-        fileContent = "<a href='" + blobUrl + "' target='_blank'>Access file</a>";
+        fileContent += `<div><img src='data:${mimeType};base64,` + lastRevision.content.file.data + "'></div>";
       }
     }
     return wikiHtml + fileContent;

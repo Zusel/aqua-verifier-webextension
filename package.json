@@ -17,6 +17,7 @@
     "url": "https://github.com/chibat/chrome-extension-typescript-starter.git"
   },
   "dependencies": {
+    "@types/mime-types": "^2.1.1",
     "clipboard": "^2.0.8",
     "data-accounting-external-verifier": "git+https://git@github.com/inblockio/data-accounting-external-verifier.git",
     "mime-types": "^2.1.34",

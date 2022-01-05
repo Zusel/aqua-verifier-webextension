@@ -6,6 +6,8 @@ import wtf from "wtf_wikipedia";
 // Not yet typed
 // @ts-ignore
 import wtfPluginHtml from "wtf-plugin-html";
+// @ts-ignore
+import Mime from "mime-types";
 
 import {
   verifyPage,
@@ -23,6 +25,23 @@ import { verifyPage as externalVerifierVerifyPage, formatPageInfo2HTML } from "d
 const clipboard = new Clipboard(".clipboard-button");
 wtf.extend(wtfPluginHtml);
 
+// We list the image extensions supported in
+// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#supported_image_formats
+// The file extensions are extracted from
+// https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types
+const supportedImageExtensions = [
+  "apng",
+  "avif",
+  "gif",
+  "jpg",
+  "jpeg",
+  "jfif",
+  "pjpeg",
+  "pjp",
+  "png",
+  "svg",
+  "webp",
+];
 // See https://stackoverflow.com/questions/16245767/creating-a-blob-from-a-base64-string-in-javascript.
 // TODO Maybe it'd be much simpler using fetch(); see the other answers in the URL above.
 const b64toBlob = (b64Data: string, contentType = '', sliceSize = 512) => {
@@ -91,10 +110,14 @@ const OfflineVerification = () => {
     let fileContent = "";
     if ("file" in lastRevision.content) {
       // If there is a file, create a download link.
-      if (lastRevision.content.file.filename.endsWith(".png")) {
-        fileContent = "<img src='data:image/png;base64," + lastRevision.content.file.data + "'>";
+      const mimeType = Mime.lookup(lastRevision.content.file.filename) || "application/octet-stream";
+      const fileExtension = Mime.extension(mimeType);
+
+      if (supportedImageExtensions.includes(fileExtension)) {
+        // If the file is an image supported in HTML, display it.
+        fileContent = `<img src='data:${mimeType};base64,` + lastRevision.content.file.data + "'>";
       } else {
-        const blob = b64toBlob(lastRevision.content.file.data, "audio/mp3");
+        const blob = b64toBlob(lastRevision.content.file.data, mimeType);
         // The in-RAM file will be garbage-collected once the tab is closed.
         const blobUrl = URL.createObjectURL(blob);
         fileContent = "<a href='" + blobUrl + "' target='_blank'>Access file</a>";

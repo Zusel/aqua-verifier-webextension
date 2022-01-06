@@ -101,7 +101,7 @@ const Popup = () => {
               })
             }
           >
-            Offline verifier
+            Offline verify
           </button>
           &nbsp;
           <button onClick={() => verifyPage(pageTitle, setPopupInfo)}>

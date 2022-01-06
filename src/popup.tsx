@@ -1,4 +1,3 @@
-import * as http from "http";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import Clipboard from "clipboard";

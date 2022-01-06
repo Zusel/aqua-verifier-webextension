@@ -10,6 +10,14 @@
     "default_popup": "popup.html"
   },
 
+  "content_scripts": [
+      {
+          "matches": ["<all_urls>"],
+          "run_at": "document_end",
+          "js": ["content_script.js"]
+      }
+  ],
+
   "background": {
     "service_worker": "background.js"
   },

@@ -3,6 +3,11 @@ function replaceInText(element: HTMLElement, pattern: RegExp, replacement: strin
   for (let node of element.childNodes) {
     switch (node.nodeType) {
       case Node.ELEMENT_NODE:
+        if ((node as HTMLElement).tagName === "TEXTAREA") {
+          // We do not replace inside the edit field of MediaWiki as this would
+          // break pages and make it impossible to add account addresses.
+          break;
+        }
         replaceInText(node as HTMLElement, pattern, replacement);
         break;
       case Node.TEXT_NODE:
@@ -16,7 +21,7 @@ function replaceInText(element: HTMLElement, pattern: RegExp, replacement: strin
   }
 }
 const html = document.querySelector('html')
-const walletAddress = "sjdfakjfaljfkafd";
+const walletAddress = "WALLET_ADDRESS";
 if (html) {
-  replaceInText(html, new RegExp(walletAddress, "g"), 'Nick Szabo');
+  replaceInText(html, new RegExp(walletAddress, "g"), 'NAME');
 }

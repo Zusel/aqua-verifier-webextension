@@ -5,8 +5,6 @@ import Clipboard from "clipboard";
 import wtf from "wtf_wikipedia";
 import "./assets/scss/styles.scss";
 
-// Not yet typed
-// @ts-ignore
 import wtfPluginHtml from "wtf-plugin-html";
 // This is taking 154 KiB space of the vendor.js bundle strangely.
 // TODO investigate.
@@ -21,8 +19,6 @@ import {
   sanitizeWikiUrl,
   verificationStatusMap,
 } from "./verifier";
-// Not yet typed
-// @ts-ignore
 import { verifyPage as externalVerifierVerifyPage, formatPageInfo2HTML } from "data-accounting-external-verifier";
 
 const clipboard = new Clipboard(".clipboard-button");

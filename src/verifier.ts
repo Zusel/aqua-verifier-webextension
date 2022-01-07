@@ -1,5 +1,3 @@
-// Not yet typed
-// @ts-ignore
 import { verifyPage as externalVerifierVerifyPage, apiVersion as externalVerifierApiVersion } from "data-accounting-external-verifier";
 
 const apiVersion = "0.3.0";

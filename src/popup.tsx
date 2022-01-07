@@ -12,8 +12,6 @@ import {
   sanitizeWikiUrl,
   verificationStatusMap,
 } from "./verifier";
-// Not yet typed
-// @ts-ignore
 import { formatPageInfo2HTML } from "data-accounting-external-verifier";
 
 const clipboard = new Clipboard(".clipboard-button");

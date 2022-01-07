@@ -1,5 +1,9 @@
 // https://stackoverflow.com/a/50537862
-function replaceInText(element: HTMLElement, pattern: RegExp, replacement: string) {
+function replaceInText(
+  element: HTMLElement,
+  pattern: RegExp,
+  replacement: string
+) {
   for (let node of element.childNodes) {
     switch (node.nodeType) {
       case Node.ELEMENT_NODE:
@@ -22,26 +26,26 @@ function replaceInText(element: HTMLElement, pattern: RegExp, replacement: strin
 }
 
 function replaceAllAddresses(addressesHashMap: any) {
- for (const [walletAddress, e] of Object.entries(addressesHashMap)) {
-   // `e` is untyped.
-   // @ts-ignore
-   if (!("nickName" in e)) {
-     continue;
-   }
-   // @ts-ignore
-   replaceInText(html, new RegExp(walletAddress, "g"), e.nickName);
- }
+  for (const [walletAddress, e] of Object.entries(addressesHashMap)) {
+    // `e` is untyped.
+    // @ts-ignore
+    if (!("nickName" in e)) {
+      continue;
+    }
+    // @ts-ignore
+    replaceInText(html, new RegExp(walletAddress, "g"), e.nickName);
+  }
 }
 
-const html = document.querySelector('html');
+const html = document.querySelector("html");
 const storageKey = "data_accounting_name_resolution";
 if (html) {
   (async () => {
-   const d = await chrome.storage.sync.get(storageKey);
-   if (!d[storageKey]) {
-     return;
-   }
-   const parsed = JSON.parse(d[storageKey])
-   replaceAllAddresses(parsed)
-  })()
+    const d = await chrome.storage.sync.get(storageKey);
+    if (!d[storageKey]) {
+      return;
+    }
+    const parsed = JSON.parse(d[storageKey]);
+    replaceAllAddresses(parsed);
+  })();
 }

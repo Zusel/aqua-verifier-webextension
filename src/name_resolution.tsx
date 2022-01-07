@@ -1,49 +1,51 @@
 // @ts-nocheck
-import React from 'react'
-import ReactDOM from "react-dom"
-import { useTable, usePagination } from 'react-table'
+import React from "react";
+import ReactDOM from "react-dom";
+import { useTable, usePagination } from "react-table";
+import Alert from "react-bootstrap/Alert";
+import "./assets/scss/styles.scss";
 
-const range = len => {
+const range = (len) => {
   // Creates [0, 1, 2, ... <len>]
-  return [...Array(len).keys()]
-}
+  return [...Array(len).keys()];
+};
 
 const newPerson = () => {
-  const statusChance = Math.random()
+  const statusChance = Math.random();
   return {
     walletAddress: "0xab5801a7d398351b8be11c439e05c5b3259aec9b",
     source: "local",
     firstName: "Vitalik",
     lastName: "Buterin",
     nickName: "vbuterin",
-  }
-}
+  };
+};
 
 function makeData(...lens) {
   const makeDataLevel = (depth = 0) => {
-    const len = lens[depth]
-    return range(len).map(d => {
+    const len = lens[depth];
+    return range(len).map((d) => {
       return {
         ...newPerson(),
-        subRows: (lens[depth + 1] ? makeDataLevel(depth + 1) : undefined),
-      }
-    })
-  }
-  return makeDataLevel()
+        subRows: lens[depth + 1] ? makeDataLevel(depth + 1) : undefined,
+      };
+    });
+  };
+  return makeDataLevel();
 }
 
-const storageKey = "data_accounting_name_resolution"
+const storageKey = "data_accounting_name_resolution";
 
 async function prepareData() {
-  const d = await chrome.storage.sync.get(storageKey)
+  const d = await chrome.storage.sync.get(storageKey);
   if (!d[storageKey]) {
-    return makeData(10)
+    return makeData(10);
   }
-  const parsed = JSON.parse(d[storageKey])
+  const parsed = JSON.parse(d[storageKey]);
   // Convert to array
-  const arrayData = Object.values(parsed)
-  console.log(arrayData)
-  return arrayData
+  const arrayData = Object.values(parsed);
+  console.log(arrayData);
+  return arrayData;
 }
 
 // Create an editable cell renderer
@@ -54,34 +56,34 @@ const EditableCell = ({
   updateMyData, // This is a custom function that we supplied to our table instance
 }) => {
   // We need to keep and update the state of the cell normally
-  const [value, setValue] = React.useState(initialValue)
+  const [value, setValue] = React.useState(initialValue);
 
   if (id === "walletAddress") {
     // walletAddress must be read-only.
-    return <div>{value}</div>
+    return <div>{value}</div>;
   }
 
-  const onChange = e => {
-    setValue(e.target.value)
-  }
+  const onChange = (e) => {
+    setValue(e.target.value);
+  };
 
   // We'll only update the external data when the input is blurred
   const onBlur = () => {
-    updateMyData(index, id, value)
-  }
+    updateMyData(index, id, value);
+  };
 
   // If the initialValue is changed external, sync it up with our state
   React.useEffect(() => {
-    setValue(initialValue)
-  }, [initialValue])
+    setValue(initialValue);
+  }, [initialValue]);
 
-  return <input value={value} onChange={onChange} onBlur={onBlur} />
-}
+  return <input value={value} onChange={onChange} onBlur={onBlur} />;
+};
 
 // Set our editable cell renderer as the default Cell renderer
 const defaultColumn = {
   Cell: EditableCell,
-}
+};
 
 // Be sure to pass our updateMyData and the skipPageReset option
 function Table({ columns, data, updateMyData, skipPageReset }) {
@@ -118,72 +120,74 @@ function Table({ columns, data, updateMyData, skipPageReset }) {
       updateMyData,
     },
     usePagination
-  )
+  );
 
   // Render the UI for your table
   return (
     <>
       <table {...getTableProps()}>
         <thead>
-          {headerGroups.map(headerGroup => (
+          {headerGroups.map((headerGroup) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map(column => (
-                <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+              {headerGroup.headers.map((column) => (
+                <th {...column.getHeaderProps()}>{column.render("Header")}</th>
               ))}
             </tr>
           ))}
         </thead>
         <tbody {...getTableBodyProps()}>
           {page.map((row, i) => {
-            prepareRow(row)
+            prepareRow(row);
             return (
               <tr {...row.getRowProps()}>
-                {row.cells.map(cell => {
-                  return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                {row.cells.map((cell) => {
+                  return (
+                    <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                  );
                 })}
               </tr>
-            )
+            );
           })}
         </tbody>
       </table>
       <div className="pagination">
         <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-          {'<<'}
-        </button>{' '}
+          {"<<"}
+        </button>{" "}
         <button onClick={() => previousPage()} disabled={!canPreviousPage}>
-          {'<'}
-        </button>{' '}
+          {"<"}
+        </button>{" "}
         <button onClick={() => nextPage()} disabled={!canNextPage}>
-          {'>'}
-        </button>{' '}
+          {">"}
+        </button>{" "}
         <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-          {'>>'}
-        </button>{' '}
+          {">>"}
+        </button>{" "}
         <span>
-          Page{' '}
+          Page{" "}
           <strong>
             {pageIndex + 1} of {pageOptions.length}
-          </strong>{' '}
+          </strong>{" "}
         </span>
         <span>
-          | Go to page:{' '}
+          | Go to page:{" "}
           <input
             type="number"
             defaultValue={pageIndex + 1}
-            onChange={e => {
-              const page = e.target.value ? Number(e.target.value) - 1 : 0
-              gotoPage(page)
+            onChange={(e) => {
+              const page = e.target.value ? Number(e.target.value) - 1 : 0;
+              gotoPage(page);
             }}
-            style={{ width: '100px' }}
+            style={{ width: "100px" }}
           />
-        </span>{' '}
+        </span>{" "}
         <select
           value={pageSize}
-          onChange={e => {
-            setPageSize(Number(e.target.value))
+          onChange={(e) => {
+            setPageSize(Number(e.target.value));
           }}
         >
-          {[10, 20, 50].map(pageSize => (
+          {[10, 20, 50].map((pageSize) => (
             <option key={pageSize} value={pageSize}>
               Show {pageSize}
             </option>
@@ -191,7 +195,7 @@ function Table({ columns, data, updateMyData, skipPageReset }) {
         </select>
       </div>
     </>
-  )
+  );
 }
 
 const App = () => {
@@ -202,33 +206,34 @@ const App = () => {
         columns: [
           {
             Header: "Account",
-            accessor: 'walletAddress',
+            accessor: "walletAddress",
           },
           {
             Header: "Source",
-            accessor: 'source',
+            accessor: "source",
           },
 
           {
-            Header: 'First Name',
-            accessor: 'firstName',
+            Header: "First Name",
+            accessor: "firstName",
           },
           {
-            Header: 'Last Name',
-            accessor: 'lastName',
+            Header: "Last Name",
+            accessor: "lastName",
           },
           {
-            Header: 'Nick Name',
-            accessor: 'nickName',
+            Header: "Nick Name",
+            accessor: "nickName",
           },
         ],
       },
     ],
     []
-  )
+  );
 
-  const [data, setData] = React.useState([])
-  const [skipPageReset, setSkipPageReset] = React.useState(false)
+  const [data, setData] = React.useState([]);
+  const [skipPageReset, setSkipPageReset] = React.useState(false);
+  const [showSaveSuccess, setShowSaveSuccess] = React.useState(false);
 
   // We need to keep the table from resetting the pageIndex when we
   // Update data. So we can keep track of that flag with a ref.
@@ -238,44 +243,53 @@ const App = () => {
   // original data
   const updateMyData = (rowIndex, columnId, value) => {
     // We also turn on the flag to not reset the page
-    setSkipPageReset(true)
-    setData(old =>
+    setSkipPageReset(true);
+    setData((old) =>
       old.map((row, index) => {
         if (index === rowIndex) {
           return {
             ...old[rowIndex],
             [columnId]: value,
-          }
+          };
         }
-        return row
+        return row;
       })
-    )
-  }
+    );
+  };
 
   // After data changes, we turn the flag back off
   // so that if data actually changes when we're not
   // editing it, the page is reset
   React.useEffect(() => {
-    setSkipPageReset(false)
-  }, [data])
+    setSkipPageReset(false);
+  }, [data]);
 
   React.useEffect(() => {
-    prepareData().then(setData)
-  }, [])
+    prepareData().then(setData);
+  }, []);
 
   const saveData = () => {
     // Convert the array data to a hash map structure.
     // This automatically deduplicates the array based on the walletAddress.
     const hashmapData = Object.fromEntries(
-      data.map(e => [e.walletAddress, e])
-    )
-    chrome.storage.sync.set({ [storageKey]: JSON.stringify(hashmapData) })
-  }
+      data.map((e) => [e.walletAddress, e])
+    );
+    chrome.storage.sync.set({ [storageKey]: JSON.stringify(hashmapData) });
+    setShowSaveSuccess(true);
+  };
 
   return (
     <>
+      <Alert
+        show={showSaveSuccess}
+        variant="success"
+        onClose={() => setShowSaveSuccess(false)}
+        dismissible
+      >
+        Saved!
+      </Alert>
       We only support 40 entries at the moment!
-      <br/>
+      <br />
       <button onClick={saveData}>Save</button>
       <Table
         columns={columns}
@@ -284,7 +298,7 @@ const App = () => {
         skipPageReset={skipPageReset}
       />
     </>
-  )
-}
+  );
+};
 
-ReactDOM.render(<App />, document.getElementById('root'))
+ReactDOM.render(<App />, document.getElementById("root"));

@@ -100,7 +100,7 @@ const Popup = () => {
           />
           VerifyPage
         </span>
-        <form className="form-inline navbar-nav">
+        <div className="form-inline navbar-nav">
           <div className="btn-toolbar">
             <button
               className="btn btn-secondary mr-2"
@@ -119,7 +119,7 @@ const Popup = () => {
               Verify Page
             </button>
           </div>
-        </form>
+        </div>
       </nav>
       <div className="p-2">
         <div

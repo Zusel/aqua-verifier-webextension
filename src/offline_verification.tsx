@@ -177,7 +177,7 @@ const OfflineVerification = () => {
     <>
       <div style={{ fontSize: "larger" }}>
         <nav
-          className="navbar navbar-dark bg-dark"
+          className="navbar navbar-light bg-light"
           style={{ minWidth: "700px" }}
         >
           <span className="navbar-brand">
@@ -190,7 +190,7 @@ const OfflineVerification = () => {
             />
             Offline Verify
           </span>
-          <form className="form-inline navbar-nav">
+          <div className="form-inline navbar-nav">
             <div className="btn-toolbar">
               <button
                 className="btn btn-secondary mr-2"
@@ -198,9 +198,9 @@ const OfflineVerification = () => {
               >
                 Verify File
               </button>
-              <input className="form-control-file" type="file" id="file" />
+              <input type="file" id="file" />
             </div>
-          </form>
+          </div>
         </nav>
         <div dangerouslySetInnerHTML={{ __html: verificationStatus }}></div>
         <ul style={{ minWidth: "700px" }}>

@@ -1,5 +1,3 @@
-import * as http from "http";
-import * as https from "https";
 // Not yet typed
 // @ts-ignore
 import { verifyPage as externalVerifierVerifyPage, apiVersion as externalVerifierApiVersion } from "data-accounting-external-verifier";
@@ -65,10 +63,6 @@ export const verificationStatusMap: { [key: string]: string } = {
 
 function isEmpty(obj: any) {
   return Object.keys(obj).length === 0;
-}
-
-function adaptiveGet(url: string) {
-  return url.startsWith("https://") ? https.get : http.get;
 }
 
 export function getUrlObj(tab: any) {
@@ -194,29 +188,28 @@ export async function setInitialBadge(
   pageTitle: string
 ) {
   const urlForChecking = `${serverUrl}/rest.php/data_accounting/get_page_last_rev/${pageTitle}`;
-  const promise = new Promise((resolve, reject) => {
-    adaptiveGet(urlForChecking)(urlForChecking, (response) => {
-      response.on("data", (data) => {
-        const respText = data.toString();
-        let badgeText, badgeColor;
-        if (respText != "{}") {
-          badgeText = "DA";
-        } else {
-          badgeText = BadgeTextNORECORD;
-        }
-        badgeColor = BadgeColorBlue;
-        chrome.action.setBadgeBackgroundColor({
-          tabId: tabId,
-          color: badgeColor,
-        });
-        chrome.action.setBadgeText({ tabId: tabId, text: badgeText });
-        console.log("setInitialBadge", badgeText);
-        resolve(badgeText);
-      });
-      response.on("error", (e) => reject("ERROR"));
-    });
+  let respText
+  try {
+    const response = await fetch(urlForChecking);
+    respText = await response.text();
+  } catch (e) {
+    return "ERROR";
+  }
+
+  let badgeText, badgeColor;
+  if (respText != "{}") {
+    badgeText = "DA";
+  } else {
+    badgeText = BadgeTextNORECORD;
+  }
+  badgeColor = BadgeColorBlue;
+  chrome.action.setBadgeBackgroundColor({
+    tabId: tabId,
+    color: badgeColor,
   });
-  return promise;
+  chrome.action.setBadgeText({ tabId: tabId, text: badgeText });
+  console.log("setInitialBadge", badgeText);
+  return badgeText;
 }
 
 export function verifyPage(title: string, callback: Function | null = null) {
@@ -364,35 +357,35 @@ export async function checkIfCacheIsUpToDate(
     callback(true);
   }
   const urlForChecking = `${serverUrl}/rest.php/data_accounting/get_page_last_rev/${pageTitle}`;
-  adaptiveGet(urlForChecking)(urlForChecking, (response) => {
-    response.on("data", (data) => {
-      const actual = JSON.parse(data);
-      const key = "verification_hash_" + sanitizedUrl;
-      chrome.storage.local.get(key, (d) => {
-        let isUpToDate = false;
-        if (d[key]) {
-          const expectedVH = d[key];
-          isUpToDate = expectedVH === actual.verification_hash;
-          if (isEmpty(actual)) {
-            // This is a corner case.
-            // If the actual page has the verification info removed, but the
-            // local storage has the old version with non empty verification
-            // remove, we then remove it from local storage.
-            chrome.storage.local.remove(sanitizedUrl, () => {
-              chrome.storage.local.remove(key, () => {
-                callback(isUpToDate);
-              });
-            });
-          } else {
+  let actual: {page_title: string, page_id: number, rev_id: number, verification_hash: string}
+  try {
+    const response = await fetch(urlForChecking);
+    actual = await response.json();
+  } catch (e) {
+    throw e;
+    return;
+  }
+  const key = "verification_hash_" + sanitizedUrl;
+  chrome.storage.local.get(key, (d) => {
+    let isUpToDate = false;
+    if (d[key]) {
+      const expectedVH = d[key];
+      isUpToDate = expectedVH === actual.verification_hash;
+      if (isEmpty(actual)) {
+        // This is a corner case.
+        // If the actual page has the verification info removed, but the
+        // local storage has the old version with non empty verification
+        // remove, we then remove it from local storage.
+        chrome.storage.local.remove(sanitizedUrl, () => {
+          chrome.storage.local.remove(key, () => {
             callback(isUpToDate);
-          }
-        } else {
-          callback(isUpToDate);
-        }
-      });
-    });
-    response.on("error", (e) => {
-      throw e;
-    });
+          });
+        });
+      } else {
+        callback(isUpToDate);
+      }
+    } else {
+      callback(isUpToDate);
+    }
   });
 }

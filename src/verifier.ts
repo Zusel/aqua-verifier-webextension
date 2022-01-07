@@ -1,4 +1,7 @@
-import { verifyPage as externalVerifierVerifyPage, apiVersion as externalVerifierApiVersion } from "data-accounting-external-verifier";
+import {
+  verifyPage as externalVerifierVerifyPage,
+  apiVersion as externalVerifierApiVersion,
+} from "data-accounting-external-verifier";
 
 const apiVersion = "0.3.0";
 
@@ -29,7 +32,6 @@ type verificationDetailsT =
   | verificationDetailsOKT
   | verificationDetailsErrorT
   | null;
-
 
 // TODO this is totally not idiomatic.
 // This is used in the popup.html and offline_verification.html, for a more
@@ -186,7 +188,7 @@ export async function setInitialBadge(
   pageTitle: string
 ) {
   const urlForChecking = `${serverUrl}/rest.php/data_accounting/get_page_last_rev/${pageTitle}`;
-  let respText
+  let respText;
   try {
     const response = await fetch(urlForChecking);
     respText = await response.text();
@@ -275,7 +277,7 @@ export function verifyPage(title: string, callback: Function | null = null) {
 
       const doVerifyMerkleProof = true;
       [verificationStatus, details] = await externalVerifierVerifyPage(
-        {title, server: serverUrl},
+        { title, server: serverUrl },
         verbose,
         doVerifyMerkleProof,
         null
@@ -355,7 +357,12 @@ export async function checkIfCacheIsUpToDate(
     callback(true);
   }
   const urlForChecking = `${serverUrl}/rest.php/data_accounting/get_page_last_rev/${pageTitle}`;
-  let actual: {page_title: string, page_id: number, rev_id: number, verification_hash: string}
+  let actual: {
+    page_title: string;
+    page_id: number;
+    rev_id: number;
+    verification_hash: string;
+  };
   try {
     const response = await fetch(urlForChecking);
     actual = await response.json();

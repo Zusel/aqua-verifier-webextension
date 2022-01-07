@@ -19,7 +19,10 @@ import {
   sanitizeWikiUrl,
   verificationStatusMap,
 } from "./verifier";
-import { verifyPage as externalVerifierVerifyPage, formatPageInfo2HTML } from "data-accounting-external-verifier";
+import {
+  verifyPage as externalVerifierVerifyPage,
+  formatPageInfo2HTML,
+} from "data-accounting-external-verifier";
 
 const clipboard = new Clipboard(".clipboard-button");
 wtf.extend(wtfPluginHtml);
@@ -43,7 +46,7 @@ const supportedImageExtensions = [
 ];
 // See https://stackoverflow.com/questions/16245767/creating-a-blob-from-a-base64-string-in-javascript.
 // TODO Maybe it'd be much simpler using fetch(); see the other answers in the URL above.
-const b64toBlob = (b64Data: string, contentType = '', sliceSize = 512) => {
+const b64toBlob = (b64Data: string, contentType = "", sliceSize = 512) => {
   const byteCharacters = atob(b64Data);
   const byteArrays = [];
 
@@ -59,9 +62,9 @@ const b64toBlob = (b64Data: string, contentType = '', sliceSize = 512) => {
     byteArrays.push(byteArray);
   }
 
-  const blob = new Blob(byteArrays, {type: contentType});
+  const blob = new Blob(byteArrays, { type: contentType });
   return blob;
-}
+};
 
 const OfflineVerification = () => {
   const [pageTitle, setPageTitle] = useState("");
@@ -70,9 +73,7 @@ const OfflineVerification = () => {
   const [verificationLog, setVerificationLog] = useState("");
   const [wikiPage, setWikiPage] = useState("");
 
-  function prepareAndSetVerificationStatus(
-    status: string
-  ) {
+  function prepareAndSetVerificationStatus(status: string) {
     const somethingBadHappened =
       '<div style="color: Black; font-size: larger;">Unknown error</div> Unexpected badge status: ' +
       status;
@@ -109,7 +110,9 @@ const OfflineVerification = () => {
     let fileContent = "";
     if ("file" in lastRevision.content) {
       // If there is a file, create a download link.
-      const mimeType = Mime.lookup(lastRevision.content.file.filename) || "application/octet-stream";
+      const mimeType =
+        Mime.lookup(lastRevision.content.file.filename) ||
+        "application/octet-stream";
       const fileExtension = Mime.extension(mimeType) || "unknown";
       const blob = b64toBlob(lastRevision.content.file.data, mimeType);
       // The in-RAM file will be garbage-collected once the tab is closed.
@@ -117,7 +120,10 @@ const OfflineVerification = () => {
       fileContent = `<a href='${blobUrl}' target='_blank' download='${lastRevision.content.file.filename}'>Access file</a>`;
       if (supportedImageExtensions.includes(fileExtension)) {
         // If the file is an image supported in HTML, display it.
-        fileContent += `<div><img src='data:${mimeType};base64,` + lastRevision.content.file.data + "'></div>";
+        fileContent +=
+          `<div><img src='data:${mimeType};base64,` +
+          lastRevision.content.file.data +
+          "'></div>";
       }
     }
     return wikiHtml + fileContent;
@@ -129,7 +135,7 @@ const OfflineVerification = () => {
     }
     const file = filesElements.files![0];
     const reader = new FileReader();
-    reader.onload = async function(e) {
+    reader.onload = async function (e) {
       if (!(e && e.target && e.target.result)) {
         return;
       }
@@ -148,13 +154,13 @@ const OfflineVerification = () => {
       const lastRevisionHtml = getLastRevisionHtml(firstPage.revisions);
 
       const [verificationStatus, details] = await externalVerifierVerifyPage(
-        {offline_data: firstPage},
+        { offline_data: firstPage },
         verbose,
         doVerifyMerkleProof,
         null
       );
       const title = firstPage.title;
-      const serverUrl = "http://offline_verify_page"
+      const serverUrl = "http://offline_verify_page";
       const verificationData = {
         serverUrl,
         title,
@@ -163,32 +169,27 @@ const OfflineVerification = () => {
       };
       setPopupInfo(verificationStatus, verificationData);
       setWikiPage(lastRevisionHtml);
-    }
+    };
     reader.readAsText(file);
   }
 
   return (
     <>
       <div style={{ fontSize: "larger" }}>
-        <button
-          onClick={offlineVerifyPage}
-          style={{ float: "right" }}
-        >
+        <button onClick={offlineVerifyPage} style={{ float: "right" }}>
           Verify File
         </button>
-        <input
-          type="file"
-          id="file"
-          style={{ float: "right" }}
-        />
+        <input type="file" id="file" style={{ float: "right" }} />
         <div dangerouslySetInnerHTML={{ __html: verificationStatus }}></div>
         <ul style={{ minWidth: "700px" }}>
           <li>
-            {pageTitle ? "Current Page Title: " + pageTitle : "Select a PKC export JSON file"}
+            {pageTitle
+              ? "Current Page Title: " + pageTitle
+              : "Select a PKC export JSON file"}
           </li>
         </ul>
         <div dangerouslySetInnerHTML={{ __html: verificationLog }}></div>
-        <hr/>
+        <hr />
         <div dangerouslySetInnerHTML={{ __html: wikiPage }}></div>
       </div>
     </>

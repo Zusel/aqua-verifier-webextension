@@ -40,7 +40,7 @@ export const verificationStatusMap: { [key: string]: string } = {
   // See the color in verifier.ts
   // Apple
   VERIFIED:
-    '<div style="color: #65B045; font-size: larger;">Page integrity validated</div> Information on this page has not been tampered with.',
+    '<div style="color: #65B045; font-size: larger;">Page integrity verified</div> Information on this page has not been tampered with.',
   // Fire Engine Red
   INVALID:
     '<div style="color: #FF0018; font-size: larger;">Page integrity verification failed</div> Information on this page can\'t be trusted.',

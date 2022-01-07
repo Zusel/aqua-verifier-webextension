@@ -106,6 +106,16 @@ const Popup = () => {
               className="btn btn-secondary mr-2"
               onClick={() =>
                 chrome.tabs.create({
+                  url: chrome.runtime.getURL("name_resolution.html"),
+                })
+              }
+            >
+              Resolve names
+            </button>
+            <button
+              className="btn btn-secondary mr-2"
+              onClick={() =>
+                chrome.tabs.create({
                   url: chrome.runtime.getURL("offline_verification.html"),
                 })
               }

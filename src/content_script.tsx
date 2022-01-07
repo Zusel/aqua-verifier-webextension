@@ -20,8 +20,28 @@ function replaceInText(element: HTMLElement, pattern: RegExp, replacement: strin
     }
   }
 }
-const html = document.querySelector('html')
-const walletAddress = "WALLET_ADDRESS";
+
+function replaceAllAddresses(addressesHashMap: any) {
+ for (const [walletAddress, e] of Object.entries(addressesHashMap)) {
+   // `e` is untyped.
+   // @ts-ignore
+   if (!("nickName" in e)) {
+     continue;
+   }
+   // @ts-ignore
+   replaceInText(html, new RegExp(walletAddress, "g"), e.nickName);
+ }
+}
+
+const html = document.querySelector('html');
+const storageKey = "data_accounting_name_resolution";
 if (html) {
-  replaceInText(html, new RegExp(walletAddress, "g"), 'NAME');
+  (async () => {
+   const d = await chrome.storage.sync.get(storageKey);
+   if (!d[storageKey]) {
+     return;
+   }
+   const parsed = JSON.parse(d[storageKey])
+   replaceAllAddresses(parsed)
+  })()
 }

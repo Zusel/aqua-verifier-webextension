@@ -8,6 +8,7 @@ module.exports = {
     popup: path.join(srcDir, "popup.tsx"),
     background: path.join(srcDir, "background.ts"),
     offline_verification: path.join(srcDir, "offline_verification.tsx"),
+    name_resolution: path.join(srcDir, "name_resolution.tsx"),
     content_script: path.join(srcDir, 'content_script.tsx'),
   },
   output: {
@@ -15,12 +16,13 @@ module.exports = {
     filename: "[name].js",
   },
   optimization: {
-    splitChunks: {
-      name: "vendor",
-      chunks(chunk) {
-        return chunk.name !== "background";
-      },
-    },
+    minimize: false,
+    //splitChunks: {
+    //  name: "vendor",
+    //  chunks(chunk) {
+    //    return chunk.name !== "background";
+    //  },
+    //},
   },
   module: {
     rules: [

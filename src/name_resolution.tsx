@@ -43,7 +43,9 @@ async function prepareData() {
   }
   const parsed = JSON.parse(d[storageKey]);
   // Convert to array
-  const arrayData = Object.values(parsed);
+  const arrayData = Object.keys(parsed).map(k => {
+    return {walletAddress: k, ...parsed[k]};
+  });
   console.log(arrayData);
   return arrayData;
 }
@@ -278,7 +280,12 @@ const App = () => {
     // Convert the array data to a hash map structure.
     // This automatically deduplicates the array based on the walletAddress.
     const hashmapData = Object.fromEntries(
-      data.map((e) => [e.walletAddress, e])
+      data.map((e) => {
+        const walletAddress = e.walletAddress;
+        // We delete the wallet address from the entry to save space.
+        delete e.walletAddress;
+        return [walletAddress, e]
+      })
     );
     chrome.storage.sync.set({ [storageKey]: JSON.stringify(hashmapData) });
     setShowSaveSuccess(true);

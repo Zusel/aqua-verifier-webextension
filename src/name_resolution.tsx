@@ -279,14 +279,17 @@ const App = () => {
   const saveData = () => {
     // Convert the array data to a hash map structure.
     // This automatically deduplicates the array based on the walletAddress.
-    const hashmapData = Object.fromEntries(
-      data.map((e) => {
-        const walletAddress = e.walletAddress;
-        // We delete the wallet address from the entry to save space.
-        delete e.walletAddress;
-        return [walletAddress, e]
-      })
-    );
+    const hashmapData = {}
+    for (const e of data) {
+      const walletAddress = e.walletAddress;
+      if (!walletAddress) {
+        // If this happens, we just ignore the row.
+        continue;
+      }
+      // We delete the wallet address from the entry to save space.
+      delete e.walletAddress;
+      hashmapData[walletAddress] = e;
+    }
     chrome.storage.sync.set({ [storageKey]: JSON.stringify(hashmapData) });
     setShowSaveSuccess(true);
   };

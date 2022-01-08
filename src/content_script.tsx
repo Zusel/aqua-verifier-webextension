@@ -37,10 +37,27 @@ function replaceAllAddresses(addressesHashMap: any) {
   }
 }
 
+async function getEnabledState() {
+  const dEnabled = await chrome.storage.sync.get(nameResolutionEnabledKey);
+  let enabled = false;
+  if (dEnabled[nameResolutionEnabledKey]) {
+    enabled = JSON.parse(dEnabled[nameResolutionEnabledKey]);
+  }
+  return enabled;
+}
+
 const html = document.querySelector("html");
 const storageKey = "data_accounting_name_resolution";
+const nameResolutionEnabledKey = "data_accounting_name_resolution_enabled_state";
+
 if (html) {
   (async () => {
+    const nameResolutionIsEnabled = await getEnabledState();
+    if (!nameResolutionIsEnabled) {
+      // Just do nothing if name resolution is disabled
+      return;
+    }
+
     const d = await chrome.storage.sync.get(storageKey);
     if (!d[storageKey]) {
       return;

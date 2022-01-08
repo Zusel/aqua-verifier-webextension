@@ -35,6 +35,7 @@ function makeData(...lens) {
 }
 
 const storageKey = "data_accounting_name_resolution";
+const nameResolutionEnabledKey = "data_accounting_name_resolution_enabled_state";
 
 async function prepareData() {
   const d = await chrome.storage.sync.get(storageKey);
@@ -46,8 +47,15 @@ async function prepareData() {
   const arrayData = Object.keys(parsed).map(k => {
     return {walletAddress: k, ...parsed[k]};
   });
-  console.log(arrayData);
   return arrayData;
+}
+
+async function prepareNameResolutionEnabled() {
+  const d = await chrome.storage.sync.get(nameResolutionEnabledKey);
+  if (!d[nameResolutionEnabledKey]) {
+    return false;
+  }
+  return JSON.parse(d[nameResolutionEnabledKey]);
 }
 
 // Create an editable cell renderer
@@ -236,6 +244,7 @@ const App = () => {
   const [data, setData] = React.useState([]);
   const [skipPageReset, setSkipPageReset] = React.useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = React.useState(false);
+  const [nameResolutionEnabled, setNameResolutionEnabled] = React.useState(false);
 
   // We need to keep the table from resetting the pageIndex when we
   // Update data. So we can keep track of that flag with a ref.
@@ -274,6 +283,8 @@ const App = () => {
 
   React.useEffect(() => {
     prepareData().then(setData);
+    // Restore nameResolutionEnabled state from storage.
+    prepareNameResolutionEnabled().then(setNameResolutionEnabled);
   }, []);
 
   const saveData = () => {
@@ -294,6 +305,11 @@ const App = () => {
     setShowSaveSuccess(true);
   };
 
+  const saveNameResolutionEnabled = (enabled) => {
+    setNameResolutionEnabled(enabled)
+    chrome.storage.sync.set({ [nameResolutionEnabledKey]: JSON.stringify(enabled) });
+  }
+
   return (
     <>
       <Alert
@@ -312,6 +328,16 @@ const App = () => {
       <button
         className="btn btn-secondary mr-2"
         onClick={onAddRowClick}>Add entry</button>
+      <div>
+        <label>
+          Enable name resolution {' '}
+          <input
+            type="checkbox"
+            onChange={(event) => saveNameResolutionEnabled(event.target.checked)}
+            checked={nameResolutionEnabled}
+          />
+        </label>
+      </div>
       <Table
         columns={columns}
         data={data}

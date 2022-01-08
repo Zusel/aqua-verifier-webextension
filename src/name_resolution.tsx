@@ -58,10 +58,10 @@ const EditableCell = ({
   // We need to keep and update the state of the cell normally
   const [value, setValue] = React.useState(initialValue);
 
-  if (id === "walletAddress") {
-    // walletAddress must be read-only.
-    return <div>{value}</div>;
-  }
+  //if (id === "walletAddress") {
+  //  // walletAddress must be read-only.
+  //  return <div>{value}</div>;
+  //}
 
   const onChange = (e) => {
     setValue(e.target.value);
@@ -257,6 +257,12 @@ const App = () => {
     );
   };
 
+  const onAddRowClick = () => {
+    setData(
+      data.concat({ username: "", email: "", gender: "", phone: "" })
+    )
+  }
+
   // After data changes, we turn the flag back off
   // so that if data actually changes when we're not
   // editing it, the page is reset
@@ -290,7 +296,12 @@ const App = () => {
       </Alert>
       We only support 40 entries at the moment!
       <br />
-      <button onClick={saveData}>Save</button>
+      <button
+        className="btn btn-primary mr-2"
+        onClick={saveData}>Save</button>
+      <button
+        className="btn btn-secondary mr-2"
+        onClick={onAddRowClick}>Add entry</button>
       <Table
         columns={columns}
         data={data}

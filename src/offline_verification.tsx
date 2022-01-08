@@ -6,8 +6,8 @@ import wtf from "wtf_wikipedia";
 import "./assets/scss/styles.scss";
 
 import wtfPluginHtml from "wtf-plugin-html";
-// This is taking 154 KiB space of the vendor.js bundle strangely.
-// TODO investigate.
+// This is taking 154 KiB space of the vendor.js bundle.
+// This is because, the database of mime types (mime-db) is big.
 import Mime from "mime-types";
 
 import {

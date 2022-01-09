@@ -5,6 +5,12 @@ import Clipboard from "clipboard";
 import wtf from "wtf_wikipedia";
 import "./assets/scss/styles.scss";
 
+import Uppy from '@uppy/core';
+import Tus from '@uppy/tus';
+import { Dashboard } from '@uppy/react';
+import '@uppy/core/dist/style.css';
+import '@uppy/dashboard/dist/style.css'
+
 import wtfPluginHtml from "wtf-plugin-html";
 // This is taking 154 KiB space of the vendor.js bundle.
 // This is because, the database of mime types (mime-db) is big.
@@ -129,11 +135,7 @@ const OfflineVerification = () => {
     return wikiHtml + fileContent;
   }
 
-  function offlineVerifyPage() {
-    const filesElements = document.getElementById("file") as HTMLInputElement;
-    if (!(filesElements && filesElements.files && filesElements.files[0])) {
-    }
-    const file = filesElements.files![0];
+  function offlineVerifyPage(file: File | Blob) {
     const reader = new FileReader();
     reader.onload = async function (e) {
       if (!(e && e.target && e.target.result)) {
@@ -173,6 +175,34 @@ const OfflineVerification = () => {
     reader.readAsText(file);
   }
 
+  // Uppy
+  const uppy = React.useMemo(() => {
+    const u = new Uppy({
+      autoProceed: true,
+      restrictions: {
+        maxNumberOfFiles: 1,
+      },
+    });
+    u.on('complete', (result) => {
+      if (!(result.successful && result.successful[0])) {
+        return;
+      }
+      const uppyFile = result.successful[0];
+      console.log(uppyFile.data);
+      offlineVerifyPage(uppyFile.data);
+    });
+    return u;
+  }, []);
+  React.useEffect(() => {
+    return () => uppy.close()
+  }, []);
+  const propsDashBoard = {
+    width: 550,
+    height: 400,
+    proudlyDisplayPoweredByUppy: false,
+    hideUploadButton: true,
+  };
+
   return (
     <>
       <div style={{ fontSize: "larger" }}>
@@ -190,18 +220,13 @@ const OfflineVerification = () => {
             />
             Offline Verify
           </span>
-          <div className="form-inline navbar-nav">
-            <div className="btn-toolbar">
-              <button
-                className="btn btn-secondary mr-2"
-                onClick={offlineVerifyPage}
-              >
-                Verify File
-              </button>
-              <input type="file" id="file" />
-            </div>
-          </div>
         </nav>
+        <div style={{display: 'flex', justifyContent: 'center'}}>
+          <Dashboard
+            uppy={uppy}
+            {...propsDashBoard}
+          />
+        </div>
         <div dangerouslySetInnerHTML={{ __html: verificationStatus }}></div>
         <ul style={{ minWidth: "700px" }}>
           <li>

@@ -32,7 +32,7 @@ module.exports = {
         exclude: /node_modules/,
       },
       {
-        test: /\.(s[ac]ss)$/i,
+        test: /\.(sa|sc|c)ss$/i,
         use: [
           {
             loader: "style-loader", // inject CSS to page

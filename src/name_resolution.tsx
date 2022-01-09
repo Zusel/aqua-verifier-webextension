@@ -14,9 +14,6 @@ const newPerson = () => {
   const statusChance = Math.random();
   return {
     walletAddress: "0xab5801a7d398351b8be11c439e05c5b3259aec9b",
-    source: "local",
-    firstName: "Vitalik",
-    lastName: "Buterin",
     nickName: "vbuterin",
   };
 };
@@ -219,20 +216,7 @@ const App = () => {
             accessor: "walletAddress",
           },
           {
-            Header: "Source",
-            accessor: "source",
-          },
-
-          {
-            Header: "First Name",
-            accessor: "firstName",
-          },
-          {
-            Header: "Last Name",
-            accessor: "lastName",
-          },
-          {
-            Header: "Nick Name",
+            Header: "Alias",
             accessor: "nickName",
           },
         ],
@@ -270,7 +254,7 @@ const App = () => {
 
   const onAddRowClick = () => {
     setData(
-      data.concat({ username: "", email: "", gender: "", phone: "" })
+      data.concat({ walletAddress: "", nickName: "" })
     )
   }
 

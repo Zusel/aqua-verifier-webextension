@@ -120,7 +120,7 @@ const Popup = () => {
                 })
               }
             >
-              Offline verifier
+              Offline verify
             </button>
             <button
               className="btn btn-primary"

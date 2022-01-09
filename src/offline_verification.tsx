@@ -201,7 +201,7 @@ const OfflineVerification = () => {
   }, []);
   const propsDashBoard = {
     width: 550,
-    height: 400,
+    height: 150,
     proudlyDisplayPoweredByUppy: false,
     hideUploadButton: true,
   };

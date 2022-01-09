@@ -187,7 +187,7 @@ export async function setInitialBadge(
   serverUrl: string,
   pageTitle: string
 ) {
-  const urlForChecking = `${serverUrl}/rest.php/data_accounting/get_page_last_rev/${pageTitle}`;
+  const urlForChecking = `${serverUrl}/rest.php/data_accounting/get_page_last_rev?page_title=${pageTitle}`;
   let respText;
   try {
     const response = await fetch(urlForChecking);
@@ -356,7 +356,7 @@ export async function checkIfCacheIsUpToDate(
     // cache since the page is not a data accounting page anyway.
     callback(true);
   }
-  const urlForChecking = `${serverUrl}/rest.php/data_accounting/get_page_last_rev/${pageTitle}`;
+  const urlForChecking = `${serverUrl}/rest.php/data_accounting/get_page_last_rev?page_title=${pageTitle}`;
   let actual: {
     page_title: string;
     page_id: number;

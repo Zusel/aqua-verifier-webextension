@@ -186,7 +186,7 @@ const PageVerificationInfo = ({pageResult}: {pageResult: pageResultT}) => {
         <li>
           {pageTitle
             ? "Current Page Title: " + pageTitle
-            : "Select a PKC export JSON file"}
+            : "Verification in Progress"}
         </li>
       </ul>
       <div dangerouslySetInnerHTML={{ __html: verificationLog }}></div>

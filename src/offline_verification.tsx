@@ -188,7 +188,10 @@ const OfflineVerification = () => {
         return;
       }
       const uppyFile = result.successful[0];
-      console.log(uppyFile.data);
+      if (!uppyFile.name.endsWith(".json")) {
+        alert("The file must be in JSON format and extension.")
+        return;
+      }
       offlineVerifyPage(uppyFile.data);
     });
     return u;

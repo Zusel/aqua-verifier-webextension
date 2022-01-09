@@ -72,10 +72,9 @@ const b64toBlob = (b64Data: string, contentType = "", sliceSize = 512) => {
   return blob;
 };
 
-const OfflineVerification = () => {
+const PageVerificationInfo = (pageResult: any) => {
   const [pageTitle, setPageTitle] = useState("");
   const [verificationStatus, setVerificationStatus] = useState("");
-  const [currentURL, setCurrentURL] = useState<string>();
   const [verificationLog, setVerificationLog] = useState("");
   const [wikiPage, setWikiPage] = useState("");
 
@@ -100,7 +99,7 @@ const OfflineVerification = () => {
     setVerificationLog(out);
   }
 
-  function setPopupInfo(status: string, data: { [key: string]: any }) {
+  function setResultInfo(status: string, data: { [key: string]: any }) {
     setPageTitle(data.title);
     prepareAndSetVerificationStatus(status);
     formatDetailsAndSetVerificationLog(data);
@@ -110,7 +109,7 @@ const OfflineVerification = () => {
     const vhs = Object.keys(revisions);
     const lastVH = vhs[vhs.length - 1];
     const lastRevision = revisions[lastVH];
-    const wikitext = lastRevision.content.content["main"];
+    const wikitext = lastRevision.content.content.main;
     // @ts-ignore
     const wikiHtml = wtf(wikitext).html();
     let fileContent = "";
@@ -135,14 +134,67 @@ const OfflineVerification = () => {
     return wikiHtml + fileContent;
   }
 
-  function offlineVerifyPage(file: File | Blob) {
+  React.useEffect(() => {
+    const fn = async () => {
+      if (!(pageResult && pageResult.pageResult && pageResult.pageResult.revisions)) {
+        return;
+      }
+      const page = pageResult.pageResult;
+      // This is for displaying the content.
+      // TODO move this to be later once the deletion of revision content from
+      // details has been removed.
+      const lastRevisionHtml = getLastRevisionHtml(page.revisions);
+
+      const verbose = false;
+      const doVerifyMerkleProof = true;
+
+      const [verificationStatus, details] = await externalVerifierVerifyPage(
+        { offline_data: page },
+        verbose,
+        doVerifyMerkleProof,
+        null
+      );
+      const title = page.title;
+      const serverUrl = "http://offline_verify_page";
+      const verificationData = {
+        serverUrl,
+        title,
+        status: verificationStatus,
+        details,
+      };
+      setResultInfo(verificationStatus, verificationData);
+      setWikiPage(lastRevisionHtml);
+    };
+    fn();
+  }, [pageResult]);
+
+  return (
+    <>
+      <div
+        dangerouslySetInnerHTML={{ __html: verificationStatus }}>
+      </div>
+      <ul style={{ minWidth: "700px" }}>
+        <li>
+          {pageTitle
+            ? "Current Page Title: " + pageTitle
+            : "Select a PKC export JSON file"}
+        </li>
+      </ul>
+      <div dangerouslySetInnerHTML={{ __html: verificationLog }}></div>
+      <hr />
+      <div dangerouslySetInnerHTML={{ __html: wikiPage }}></div>
+    </>
+  );
+};
+
+const OfflineVerification = () => {
+  const [mainPageResult, setMainPageResult] = useState<File>();
+  function offlineVerifyJSONFile(file: File | Blob) {
     const reader = new FileReader();
-    reader.onload = async function (e) {
+    reader.onload = async (e) => {
       if (!(e && e.target && e.target.result)) {
         return;
       }
-      const verbose = false;
-      const doVerifyMerkleProof = true;
       const parsedExport = JSON.parse(e.target.result as string);
       if (!("pages" in parsedExport)) {
         return;
@@ -150,27 +202,7 @@ const OfflineVerification = () => {
       // TODO we currently only verifies 1 page from the json data.
       // Generalize this
       const firstPage = parsedExport.pages[0];
-      // This is for displaying the content.
-      // TODO move this to be later once the deletion of revision content from
-      // details has been removed.
-      const lastRevisionHtml = getLastRevisionHtml(firstPage.revisions);
-
-      const [verificationStatus, details] = await externalVerifierVerifyPage(
-        { offline_data: firstPage },
-        verbose,
-        doVerifyMerkleProof,
-        null
-      );
-      const title = firstPage.title;
-      const serverUrl = "http://offline_verify_page";
-      const verificationData = {
-        serverUrl,
-        title,
-        status: verificationStatus,
-        details: details,
-      };
-      setPopupInfo(verificationStatus, verificationData);
-      setWikiPage(lastRevisionHtml);
+      setMainPageResult(firstPage);
     };
     reader.readAsText(file);
   }
@@ -192,7 +224,7 @@ const OfflineVerification = () => {
         alert("The file must be in JSON format and extension.")
         return;
       }
-      offlineVerifyPage(uppyFile.data);
+      offlineVerifyJSONFile(uppyFile.data);
     });
     return u;
   }, []);
@@ -230,17 +262,7 @@ const OfflineVerification = () => {
             {...propsDashBoard}
           />
         </div>
-        <div dangerouslySetInnerHTML={{ __html: verificationStatus }}></div>
-        <ul style={{ minWidth: "700px" }}>
-          <li>
-            {pageTitle
-              ? "Current Page Title: " + pageTitle
-              : "Select a PKC export JSON file"}
-          </li>
-        </ul>
-        <div dangerouslySetInnerHTML={{ __html: verificationLog }}></div>
-        <hr />
-        <div dangerouslySetInnerHTML={{ __html: wikiPage }}></div>
+        <PageVerificationInfo pageResult={mainPageResult}/>
       </div>
     </>
   );

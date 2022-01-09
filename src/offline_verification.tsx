@@ -72,7 +72,8 @@ const b64toBlob = (b64Data: string, contentType = "", sliceSize = 512) => {
   return blob;
 };
 
-const PageVerificationInfo = (pageResult: any) => {
+// TODO shouldn't be any
+const PageVerificationInfo = ({pageResult}: any) => {
   const [pageTitle, setPageTitle] = useState("");
   const [verificationStatus, setVerificationStatus] = useState("");
   const [verificationLog, setVerificationLog] = useState("");
@@ -136,25 +137,24 @@ const PageVerificationInfo = (pageResult: any) => {
 
   React.useEffect(() => {
     const fn = async () => {
-      if (!(pageResult && pageResult.pageResult && pageResult.pageResult.revisions)) {
+      if (!(pageResult && pageResult.revisions)) {
         return;
       }
-      const page = pageResult.pageResult;
       // This is for displaying the content.
       // TODO move this to be later once the deletion of revision content from
       // details has been removed.
-      const lastRevisionHtml = getLastRevisionHtml(page.revisions);
+      const lastRevisionHtml = getLastRevisionHtml(pageResult.revisions);
 
       const verbose = false;
       const doVerifyMerkleProof = true;
 
       const [verificationStatus, details] = await externalVerifierVerifyPage(
-        { offline_data: page },
+        { offline_data: pageResult },
         verbose,
         doVerifyMerkleProof,
         null
       );
-      const title = page.title;
+      const title = pageResult.title;
       const serverUrl = "http://offline_verify_page";
       const verificationData = {
         serverUrl,
@@ -183,12 +183,13 @@ const PageVerificationInfo = (pageResult: any) => {
       <div dangerouslySetInnerHTML={{ __html: verificationLog }}></div>
       <hr />
       <div dangerouslySetInnerHTML={{ __html: wikiPage }}></div>
+      <hr />
     </>
   );
 };
 
 const OfflineVerification = () => {
-  const [mainPageResult, setMainPageResult] = useState<File>();
+  const [pages, setPages] = useState<File[]>([]);
   function offlineVerifyJSONFile(file: File | Blob) {
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -199,10 +200,8 @@ const OfflineVerification = () => {
       if (!("pages" in parsedExport)) {
         return;
       }
-      // TODO we currently only verifies 1 page from the json data.
-      // Generalize this
-      const firstPage = parsedExport.pages[0];
-      setMainPageResult(firstPage);
+      const pages = parsedExport.pages;
+      setPages(pages);
     };
     reader.readAsText(file);
   }
@@ -262,7 +261,7 @@ const OfflineVerification = () => {
             {...propsDashBoard}
           />
         </div>
-        <PageVerificationInfo pageResult={mainPageResult}/>
+        {pages.map((page, index) => <PageVerificationInfo key={index} pageResult={page}/>)} 
       </div>
     </>
   );

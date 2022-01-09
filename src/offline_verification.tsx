@@ -72,8 +72,17 @@ const b64toBlob = (b64Data: string, contentType = "", sliceSize = 512) => {
   return blob;
 };
 
-// TODO shouldn't be any
-const PageVerificationInfo = ({pageResult}: any) => {
+type pageResultT = {
+  genesis_hash: string,
+  domain_id: string,
+  latest_verification_hash: string,
+  title: string,
+  namespace: number,
+  chain_height: number,
+  revisions: object,
+}
+
+const PageVerificationInfo = ({pageResult}: {pageResult: pageResultT}) => {
   const [pageTitle, setPageTitle] = useState("");
   const [verificationStatus, setVerificationStatus] = useState("");
   const [verificationLog, setVerificationLog] = useState("");
@@ -189,7 +198,7 @@ const PageVerificationInfo = ({pageResult}: any) => {
 };
 
 const OfflineVerification = () => {
-  const [pages, setPages] = useState<File[]>([]);
+  const [pages, setPages] = useState<pageResultT[]>([]);
   function offlineVerifyJSONFile(file: File | Blob) {
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -200,8 +209,7 @@ const OfflineVerification = () => {
       if (!("pages" in parsedExport)) {
         return;
       }
-      const pages = parsedExport.pages;
-      setPages(pages);
+      setPages(parsedExport.pages);
     };
     reader.readAsText(file);
   }

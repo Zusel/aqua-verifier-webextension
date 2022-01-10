@@ -4,21 +4,16 @@ import { Box, ChakraProvider, Flex, Stack, IconButton } from "@chakra-ui/react";
 import { WarningTwoIcon, LockIcon, CalendarIcon } from "@chakra-ui/icons";
 import NavBar from "./components/NavBar";
 import VerificationSummary from "./components/VerificationSummary";
-import Clipboard from "clipboard";
 import "./assets/scss/styles.scss";
 
 import {
   verifyPage,
   extractPageTitle,
-  BadgeColorNA,
-  BadgeColorBlue,
   getUrlObj,
   sanitizeWikiUrl,
   verificationStatusMap,
 } from "./verifier";
 import { formatPageInfo2HTML } from "data-accounting-external-verifier";
-
-const clipboard = new Clipboard(".clipboard-button");
 
 const Popup = () => {
   const [pageTitle, setPageTitle] = useState("");

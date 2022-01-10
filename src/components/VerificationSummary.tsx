@@ -25,7 +25,7 @@ const VerificationSummary = ({
         paddingY={4}
         marginY={2}
       >
-        <Text color="blackAlpha.600">PAGE INTEGRETY</Text>
+        <Text color="blackAlpha.600">PAGE INTEGRITY</Text>
         <Box
           fontSize="xl"
           dangerouslySetInnerHTML={{ __html: verificationStatus }}

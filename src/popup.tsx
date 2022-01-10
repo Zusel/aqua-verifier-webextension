@@ -10,6 +10,7 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { WarningTwoIcon, LockIcon, CalendarIcon } from "@chakra-ui/icons";
+import Clipboard from "clipboard";
 import NavBar from "./components/NavBar";
 import VerificationSummary from "./components/VerificationSummary";
 import "./assets/scss/styles.scss";
@@ -23,6 +24,10 @@ import {
 } from "./verifier";
 import { formatPageInfo2HTML } from "data-accounting-external-verifier";
 import Layout from "./components/Layout";
+
+// This object is actually used! It's used in the output of formatPageInfo2HTML
+// HTML string output from "data-accounting-external-verifier".
+const clipboard = new Clipboard(".clipboard-button");
 
 const Popup = () => {
   const [pageTitle, setPageTitle] = useState("");

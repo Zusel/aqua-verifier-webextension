@@ -32,7 +32,8 @@ function makeData(...lens) {
 }
 
 const storageKey = "data_accounting_name_resolution";
-const nameResolutionEnabledKey = "data_accounting_name_resolution_enabled_state";
+const nameResolutionEnabledKey =
+  "data_accounting_name_resolution_enabled_state";
 
 async function prepareData() {
   const d = await chrome.storage.sync.get(storageKey);
@@ -41,8 +42,8 @@ async function prepareData() {
   }
   const parsed = JSON.parse(d[storageKey]);
   // Convert to array
-  const arrayData = Object.keys(parsed).map(k => {
-    return {walletAddress: k, ...parsed[k]};
+  const arrayData = Object.keys(parsed).map((k) => {
+    return { walletAddress: k, ...parsed[k] };
   });
   return arrayData;
 }
@@ -228,7 +229,8 @@ const App = () => {
   const [data, setData] = React.useState([]);
   const [skipPageReset, setSkipPageReset] = React.useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = React.useState(false);
-  const [nameResolutionEnabled, setNameResolutionEnabled] = React.useState(false);
+  const [nameResolutionEnabled, setNameResolutionEnabled] =
+    React.useState(false);
 
   // We need to keep the table from resetting the pageIndex when we
   // Update data. So we can keep track of that flag with a ref.
@@ -253,10 +255,8 @@ const App = () => {
   };
 
   const onAddRowClick = () => {
-    setData(
-      data.concat({ walletAddress: "", nickName: "" })
-    )
-  }
+    setData(data.concat({ walletAddress: "", nickName: "" }));
+  };
 
   // After data changes, we turn the flag back off
   // so that if data actually changes when we're not
@@ -274,7 +274,7 @@ const App = () => {
   const saveData = () => {
     // Convert the array data to a hash map structure.
     // This automatically deduplicates the array based on the walletAddress.
-    const hashmapData = {}
+    const hashmapData = {};
     for (const e of data) {
       const walletAddress = e.walletAddress;
       if (!walletAddress) {
@@ -290,9 +290,11 @@ const App = () => {
   };
 
   const saveNameResolutionEnabled = (enabled) => {
-    setNameResolutionEnabled(enabled)
-    chrome.storage.sync.set({ [nameResolutionEnabledKey]: JSON.stringify(enabled) });
-  }
+    setNameResolutionEnabled(enabled);
+    chrome.storage.sync.set({
+      [nameResolutionEnabledKey]: JSON.stringify(enabled),
+    });
+  };
 
   return (
     <>
@@ -306,18 +308,20 @@ const App = () => {
       </Alert>
       We only support 40 entries at the moment!
       <br />
-      <button
-        className="btn btn-primary mr-2"
-        onClick={saveData}>Save</button>
-      <button
-        className="btn btn-secondary mr-2"
-        onClick={onAddRowClick}>Add entry</button>
+      <button className="btn btn-primary mr-2" onClick={saveData}>
+        Save
+      </button>
+      <button className="btn btn-secondary mr-2" onClick={onAddRowClick}>
+        Add entry
+      </button>
       <div>
         <label>
-          Enable name resolution {' '}
+          Enable name resolution{" "}
           <input
             type="checkbox"
-            onChange={(event) => saveNameResolutionEnabled(event.target.checked)}
+            onChange={(event) =>
+              saveNameResolutionEnabled(event.target.checked)
+            }
             checked={nameResolutionEnabled}
           />
         </label>

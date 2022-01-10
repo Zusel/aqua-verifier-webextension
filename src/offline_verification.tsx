@@ -249,10 +249,10 @@ const OfflineVerification = () => {
     <Layout pageSubtitle="OFFLINE">
       <Center marginTop={4}>
         <Dashboard uppy={uppy} {...propsDashBoard} />
-        {pages.map((page, index) => (
-          <PageVerificationInfo key={index} pageResult={page} />
-        ))}
       </Center>
+      {pages.map((page, index) => (
+        <PageVerificationInfo key={index} pageResult={page} />
+      ))}
     </Layout>
   );
 };

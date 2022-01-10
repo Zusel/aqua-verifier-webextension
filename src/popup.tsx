@@ -1,6 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import { Box, ChakraProvider, Flex, Stack, IconButton } from "@chakra-ui/react";
+import {
+  Box,
+  ChakraProvider,
+  Flex,
+  Stack,
+  IconButton,
+  ButtonGroup,
+  Button,
+} from "@chakra-ui/react";
 import { WarningTwoIcon, LockIcon, CalendarIcon } from "@chakra-ui/icons";
 import NavBar from "./components/NavBar";
 import VerificationSummary from "./components/VerificationSummary";
@@ -14,6 +22,7 @@ import {
   verificationStatusMap,
 } from "./verifier";
 import { formatPageInfo2HTML } from "data-accounting-external-verifier";
+import Layout from "./components/Layout";
 
 const Popup = () => {
   const [pageTitle, setPageTitle] = useState("");
@@ -90,11 +99,30 @@ const Popup = () => {
     verifyPage(pageTitle, setPopupInfo);
   };
 
+  const handleOfflineVerifyClick = () => {
+    return chrome.tabs.create({
+      url: chrome.runtime.getURL("offline_verification.html"),
+    });
+  };
+
+  const handleResolveNamesClick = () => {
+    return chrome.tabs.create({
+      url: chrome.runtime.getURL("name_resolution.html"),
+    });
+  };
+
+  const popupToolbar: ReactNode = (
+    <ButtonGroup>
+      <Button onClick={handleResolveNamesClick}>Resolve Names</Button>
+      <Button onClick={handleOfflineVerifyClick}>Offline Verify</Button>
+      <Button onClick={handleVerifyPageClick}>Verify Page</Button>
+    </ButtonGroup>
+  );
+
   return (
-    <ChakraProvider>
+    <Layout toolbar={popupToolbar}>
       <Stack direction="column" minW="700px">
-        <NavBar onVerifyClick={handleVerifyPageClick} />
-        <Flex direction="row" paddingY={4} paddingRight={5}>
+        <Flex paddingY={4} paddingRight={5}>
           <Stack direction="column" w="80px" paddingX={4}>
             <CalendarIcon m={3} />
             <IconButton
@@ -119,7 +147,7 @@ const Popup = () => {
           </Box>
         </Flex>
       </Stack>
-    </ChakraProvider>
+    </Layout>
   );
 };
 

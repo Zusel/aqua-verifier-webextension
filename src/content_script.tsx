@@ -52,6 +52,12 @@ const nameResolutionEnabledKey = "data_accounting_name_resolution_enabled_state"
 
 if (html) {
   (async () => {
+    const daMeta = document.querySelector(`meta[name="data-accounting-mediawiki"]`);
+    if (!daMeta) {
+      // Do nothing if the page is not a data accounting page!
+      return;
+    }
+
     const nameResolutionIsEnabled = await getEnabledState();
     if (!nameResolutionIsEnabled) {
       // Just do nothing if name resolution is disabled

@@ -34,7 +34,7 @@ const clipboard = new Clipboard(".clipboard-button");
 
 const Popup = () => {
   const [pageTitle, setPageTitle] = useState("");
-  const [verificationStatus, setVerificationStatus] = useState("");
+  const [verificationStatus, setVerificationStatus] = useState({});
   const [currentURL, setCurrentURL] = useState<string>();
   const [verificationLog, setVerificationLog] = useState("");
 
@@ -46,9 +46,11 @@ const Popup = () => {
       .get({ url: sanitizedUrl, name: extractedPageTitle })
       .then((cookie: any) => {
         const badgeStatus = (!!cookie && cookie.value.toString()) || "N/A";
-        const somethingBadHappened =
-          '<div style="color: Black; font-size: larger;">Unknown error</div> Unexpected badge status: ' +
-          badgeStatus;
+        const somethingBadHappened = {
+          title: "Unknown error",
+          subtitle: `Unexpected badge status: ${badgeStatus}`,
+          keyColor: "black",
+        };
         const verificationStatusMessage =
           verificationStatusMap[badgeStatus] || somethingBadHappened;
         setVerificationStatus(verificationStatusMessage);
@@ -150,7 +152,7 @@ const Popup = () => {
           </Stack>
 
           <Box width="100%">
-            {pageTitle ? (
+            {pageTitle && verificationStatus ? (
               <>
                 <VerificationSummary
                   pageTitle={pageTitle}

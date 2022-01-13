@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import Clipboard from "clipboard";
 import wtf from "wtf_wikipedia";
 import "./assets/scss/styles.scss";
+import VerificationStatus from "./components/VerificationStatus";
 
 import Uppy from "@uppy/core";
 import Tus from "@uppy/tus";
@@ -88,14 +89,20 @@ type pageResultT = {
 
 const PageVerificationInfo = ({ pageResult }: { pageResult: pageResultT }) => {
   const [pageTitle, setPageTitle] = useState("");
-  const [verificationStatus, setVerificationStatus] = useState("");
+  const [verificationStatus, setVerificationStatus] = useState({
+    title: "",
+    subtitle: "",
+    keyColor: "",
+  });
   const [verificationLog, setVerificationLog] = useState("");
   const [wikiPage, setWikiPage] = useState("");
 
   function prepareAndSetVerificationStatus(status: string) {
-    const somethingBadHappened =
-      '<div style="color: Black; font-size: larger;">Unknown error</div> Unexpected badge status: ' +
-      status;
+    const somethingBadHappened = {
+      title: "Unknown error",
+      subtitle: `Unexpected badge status: ${status}`,
+      keyColor: "black",
+    };
     const verificationStatusMessage =
       verificationStatusMap[status] || somethingBadHappened;
     setVerificationStatus(verificationStatusMessage);
@@ -191,7 +198,7 @@ const PageVerificationInfo = ({ pageResult }: { pageResult: pageResultT }) => {
 
   return (
     <>
-      <div dangerouslySetInnerHTML={{ __html: verificationStatus }}></div>
+      <VerificationStatus verificationStatus={verificationStatus} />
       <ul style={{ minWidth: "700px" }}>
         <li>
           {pageTitle

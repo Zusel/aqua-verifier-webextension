@@ -2,9 +2,8 @@ import {
   verifyPage as externalVerifierVerifyPage,
   apiVersion as externalVerifierApiVersion,
 } from "data-accounting-external-verifier";
-
 const apiVersion = "0.3.0";
-
+import { VerificationStatusProps } from "./components/VerificationStatus";
 export const BadgeTextNA = "N/A";
 // Dark gray custom picked
 export const BadgeColorNA = "#ABABAD";
@@ -15,6 +14,8 @@ export const BadgeColorBlue = "#427FED";
 // From https://www.schemecolor.com/advent-of-the-season.php
 // Naples Yellow
 export const BadgeColorYellow = "#F9D460";
+export const BadgeColorError = "#FF0018";
+export const BadgeColorSuccess = "#65B045";
 
 // TODO import from external verifier.
 const ERROR_VERIFICATION_STATUS = "ERROR";
@@ -36,30 +37,43 @@ type verificationDetailsT =
 // TODO this is totally not idiomatic.
 // This is used in the popup.html and offline_verification.html, for a more
 // informative description of each verification status.
-export const verificationStatusMap: { [key: string]: string } = {
-  // See the color in verifier.ts
-  // Apple
-  VERIFIED:
-    '<div style="color: #65B045; font-size: larger;">Page integrity verified</div> Information on this page has not been tampered with.',
-  // Fire Engine Red
-  INVALID:
-    '<div style="color: #FF0018; font-size: larger;">Page integrity verification failed</div> Information on this page can\'t be trusted.',
-  NORECORD:
-    '<div style="color: ' +
-    BadgeColorBlue +
-    '; font-size: larger;">Data accounting supported but no record available</div> Information on this page might have been tampered.',
-  API_MISMATCH:
-    '<div style="color: ' +
-    BadgeColorYellow +
-    '; font-size: larger;">Mismatch</div> Incompatible version.',
-  "N/A":
-    '<div style="color: ' +
-    BadgeColorNA +
-    '; font-size: larger;">No record available</div> Information on this page might have been tampered.',
-  // Fire Engine Red
-  ERROR:
-    '<div style="color: #FF0018; font-size: larger;">Error</div> An error has occured.',
-};
+export const verificationStatusMap: { [key: string]: VerificationStatusProps } =
+  {
+    // See the color in verifier.ts
+    // Apple
+    VERIFIED: {
+      title: "Page integrity verified",
+      subtitle: "Information on this page has not been tampered with.",
+      keyColor: BadgeColorSuccess,
+    },
+    // Fire Engine Red
+    INVALID: {
+      title: "Page integrity verification failed",
+      subtitle: "Information on this page can't be trusted.",
+      keyColor: BadgeColorError,
+    },
+    NORECORD: {
+      title: "Data accounting supported but no record available",
+      subtitle: "Information on this page might have been tampered.",
+      keyColor: BadgeColorBlue,
+    },
+    API_MISMATCH: {
+      title: "Mismatch",
+      subtitle: "Incompatible version.",
+      keyColor: BadgeColorYellow,
+    },
+    "N/A": {
+      title: "No record available",
+      subtitle: "Information on this page might have been tampered.",
+      keyColor: BadgeColorNA,
+    },
+    // Fire Engine Red
+    ERROR: {
+      title: "Error",
+      subtitle: "An error has occured.",
+      keyColor: BadgeColorError,
+    },
+  };
 
 function isEmpty(obj: any) {
   return Object.keys(obj).length === 0;
@@ -117,12 +131,12 @@ export function setBadgeStatus(tabId: number, status: string) {
     // From https://www.schemecolor.com/easy-to-use-colors.php
     // Apple
     // (actually it is greenish in color, not red)
-    badgeColor = "#65B045";
+    badgeColor = BadgeColorSuccess;
     badgeText = "DA";
   } else if (status === "INVALID") {
     // From https://www.schemecolor.com/no-news-is-good.php
     // Fire Engine Red
-    badgeColor = "#FF0018";
+    badgeColor = BadgeColorError;
     badgeText = "DA";
   } else if (status === "NORECORD") {
     badgeColor = BadgeColorBlue;

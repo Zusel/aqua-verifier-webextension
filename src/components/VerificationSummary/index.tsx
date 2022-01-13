@@ -1,5 +1,5 @@
 import { Heading, Box } from "@chakra-ui/react";
-
+import VerificationStatus from "../VerificationStatus";
 interface VerificationSummaryProps {
   pageTitle: string;
   verificationStatus: any;
@@ -15,10 +15,7 @@ const VerificationSummary = ({
         {pageTitle}
       </Heading>
       <Box border="dashed 3px #c9c9c9" rounded={2} px={10} py={4}>
-        <Box
-          fontSize="xl"
-          dangerouslySetInnerHTML={{ __html: verificationStatus }}
-        />
+        <VerificationStatus verificationStatus={verificationStatus} />
       </Box>
     </Box>
   );

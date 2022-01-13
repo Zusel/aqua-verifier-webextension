@@ -8,11 +8,12 @@ import {
   IconButton,
   ButtonGroup,
   Button,
+  Heading,
 } from "@chakra-ui/react";
 import { WarningTwoIcon, LockIcon, CalendarIcon } from "@chakra-ui/icons";
 import Clipboard from "clipboard";
 import NavBar from "./components/NavBar";
-import VerificationSummary from "./components/VerificationSummary";
+import VerificationSummary from "./components/VerificationSummary/index";
 import "./assets/scss/styles.scss";
 
 import {
@@ -147,12 +148,23 @@ const Popup = () => {
               icon={<WarningTwoIcon />}
             />
           </Stack>
+
           <Box width="100%">
-            <VerificationSummary
-              pageTitle={pageTitle}
-              verificationStatus={verificationStatus}
-            />
-            <div dangerouslySetInnerHTML={{ __html: verificationLog }}></div>
+            {pageTitle ? (
+              <>
+                <VerificationSummary
+                  pageTitle={pageTitle}
+                  verificationStatus={verificationStatus}
+                />
+                <div
+                  dangerouslySetInnerHTML={{ __html: verificationLog }}
+                ></div>
+              </>
+            ) : (
+              <Heading as="h2" fontSize="2xl">
+                [Unsupported]
+              </Heading>
+            )}
           </Box>
         </Flex>
       </Stack>

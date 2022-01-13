@@ -10,8 +10,8 @@ const NavBar = ({ toolbar, pageSubtitle }: NavBarProps) => {
   return (
     <Flex bg="#343a40" width="100%" padding={4}>
       <Center>
-        <Heading color="white" fontSize="2xl">
-          VERIFIER{pageSubtitle ? ` // ${pageSubtitle}` : null}
+        <Heading as="h1" color="white" fontSize="3xl">
+          Verifier{pageSubtitle ? ` // ${pageSubtitle}` : null}
         </Heading>
       </Center>
       <Spacer />

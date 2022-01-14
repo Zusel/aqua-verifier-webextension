@@ -131,10 +131,16 @@ const PageVerificationInfo = ({ pageResult }: { pageResult: pageResultT }) => {
         Mime.lookup(lastRevision.content.file.filename) ||
         "application/octet-stream";
       const fileExtension = Mime.extension(mimeType) || "unknown";
-      const blob = b64toBlob(lastRevision.content.file.data, mimeType);
-      // The in-RAM file will be garbage-collected once the tab is closed.
-      const blobUrl = URL.createObjectURL(blob);
-      fileContent = `<a href='${blobUrl}' target='_blank' download='${lastRevision.content.file.filename}'>Access file</a>`;
+      let blob
+      try {
+        blob = b64toBlob(lastRevision.content.file.data, mimeType);
+        // The in-RAM file will be garbage-collected once the tab is closed.
+        const blobUrl = URL.createObjectURL(blob);
+        fileContent = `<a href='${blobUrl}' target='_blank' download='${lastRevision.content.file.filename}'>Access file</a>`;
+      } catch (e) {
+        alert("The base64-encoded file content is corrupted.");
+      }
+
       if (supportedImageExtensions.includes(fileExtension)) {
         // If the file is an image supported in HTML, display it.
         fileContent +=

@@ -2,7 +2,6 @@ import React, { ReactNode, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import {
   Box,
-  ChakraProvider,
   Flex,
   Stack,
   IconButton,
@@ -12,7 +11,6 @@ import {
 } from "@chakra-ui/react";
 import { WarningTwoIcon, LockIcon, CalendarIcon } from "@chakra-ui/icons";
 import Clipboard from "clipboard";
-import NavBar from "./components/NavBar";
 import VerificationSummary from "./components/VerificationSummary/index";
 import "./assets/scss/styles.scss";
 
@@ -26,7 +24,7 @@ import {
 import { formatPageInfo2HTML } from "data-accounting-external-verifier";
 import Layout from "./components/Layout";
 
-import * as nameResolver from "./name_resolver"
+import * as nameResolver from "./name_resolver";
 
 // This object is actually used! It's used in the output of formatPageInfo2HTML
 // HTML string output from "data-accounting-external-verifier".
@@ -87,7 +85,9 @@ const Popup = () => {
     );
   }, []);
 
-  async function formatDetailsAndSetVerificationLog(data: { [key: string]: any }) {
+  async function formatDetailsAndSetVerificationLog(data: {
+    [key: string]: any;
+  }) {
     const verbose = false;
     let out = formatPageInfo2HTML(
       data.serverUrl,

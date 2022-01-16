@@ -13,7 +13,7 @@ type VerificationStatus = {
 const VerificationStatus = ({ verificationStatus }: VerificationStatus) => {
   return (
     <>
-      <Heading fontSize="2xl" color={verificationStatus.keyColor}>
+      <Heading color={verificationStatus.keyColor}>
         {verificationStatus.title}
       </Heading>
       <Text fontSize="md">{verificationStatus.subtitle}</Text>

@@ -11,7 +11,7 @@ const VerificationSummary = ({
 }: VerificationSummaryProps) => {
   return (
     <Box mb={4}>
-      <Heading as="h2" fontSize="2xl" mb={2}>
+      <Heading as="h2" mb={2}>
         {pageTitle}
       </Heading>
       <Box border="dashed 3px #c9c9c9" rounded={2} px={10} py={4}>

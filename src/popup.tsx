@@ -12,6 +12,7 @@ import {
 import { WarningTwoIcon, LockIcon, CalendarIcon } from "@chakra-ui/icons";
 import Clipboard from "clipboard";
 import VerificationSummary from "./components/VerificationSummary/index";
+import VerificationLog from "./components/VerificationLog";
 import "./assets/scss/styles.scss";
 
 import {
@@ -34,7 +35,7 @@ const Popup = () => {
   const [pageTitle, setPageTitle] = useState("");
   const [verificationStatus, setVerificationStatus] = useState({});
   const [currentURL, setCurrentURL] = useState<string>();
-  const [verificationLog, setVerificationLog] = useState("");
+  const [verificationLog, setVerificationLog] = useState({});
 
   function prepareAndSetVerificationStatus(
     sanitizedUrl: string,
@@ -56,33 +57,37 @@ const Popup = () => {
   }
 
   useEffect(() => {
-    chrome.tabs.query(
-      { active: true, currentWindow: true },
-      async function (tabs) {
-        const tab = tabs[0];
-        setCurrentURL(tab.url);
-        if (!tab.url) {
-          return;
-        }
+    const queryOptions = { active: true, currentWindow: true };
+    console.log("THERE");
 
-        const urlObj = getUrlObj(tab);
-        const extractedPageTitle = extractPageTitle(urlObj);
-        if (!extractedPageTitle) {
-          return;
-        }
-        const sanitizedUrl = sanitizeWikiUrl(tab.url);
+    chrome.tabs.query(queryOptions, async function (tabs) {
+      console.log("ASYNC");
 
-        // TODO The following steps are almost identical to setPopupInfo.
-        // Refactor.
-        setPageTitle(extractedPageTitle);
-        prepareAndSetVerificationStatus(sanitizedUrl, extractedPageTitle);
-        const jsonData = await chrome.storage.local.get(sanitizedUrl);
-        if (!jsonData[sanitizedUrl]) {
-          return;
-        }
-        formatDetailsAndSetVerificationLog(JSON.parse(jsonData[sanitizedUrl]));
+      const tab = tabs[0];
+      setCurrentURL(tab.url);
+      if (!tab.url) {
+        return;
       }
-    );
+
+      const urlObj = getUrlObj(tab);
+      const extractedPageTitle = extractPageTitle(urlObj);
+      if (!extractedPageTitle) {
+        return;
+      }
+      const sanitizedUrl = sanitizeWikiUrl(tab.url);
+
+      // TODO The following steps are almost identical to setPopupInfo.
+      // Refactor.
+      setPageTitle(extractedPageTitle);
+      prepareAndSetVerificationStatus(sanitizedUrl, extractedPageTitle);
+      console.log({ sanitizedUrl });
+      // const jsonData = useJsonData(sanitizedUrl);
+      console.log("HERE");
+      // console.log({ jsonData });
+
+      //@ts-ignore
+      formatDetailsAndSetVerificationLog(JSON.parse(jsonData[sanitizedUrl]));
+    });
   }, []);
 
   async function formatDetailsAndSetVerificationLog(data: {
@@ -100,6 +105,25 @@ const Popup = () => {
     out = await nameResolver.resolveNamesRawText(out);
     setVerificationLog(out);
   }
+  // function useJsonData(sanitizedUrl: string) {
+  //   const [jsonData, setJsonData] = useState({});
+  //   console.log("IN IT!");
+
+  //   useEffect(() => {
+  //     const getJsonData = async (url: string) => {
+  //       try {
+  //         const data = await chrome.storage.local.get(url);
+  //         setJsonData(data);
+  //       } catch (error) {
+  //         console.error(error);
+  //       }
+  //     };
+
+  //     getJsonData(sanitizedUrl);
+  //   }, [sanitizedUrl]);
+  //   console.log({ jsonData });
+  //   return jsonData;
+  // }
 
   function setPopupInfo(data: { [key: string]: any }) {
     setPageTitle(data.title);
@@ -158,14 +182,13 @@ const Popup = () => {
                   pageTitle={pageTitle}
                   verificationStatus={verificationStatus}
                 />
-                <div
+                <VerificationLog verificationLog={verificationLog} />
+                {/* <div
                   dangerouslySetInnerHTML={{ __html: verificationLog }}
-                ></div>
+                ></div> */}
               </>
             ) : (
-              <Heading as="h2" fontSize="2xl">
-                [Unsupported]
-              </Heading>
+              <Heading as="h2">[Unsupported]</Heading>
             )}
           </Box>
         </Flex>

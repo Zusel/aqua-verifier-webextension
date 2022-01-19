@@ -7,6 +7,7 @@ import VerificationLog from "../../VerificationLog";
 import VerificationSummary from "../../VerificationSummary";
 import * as nameResolver from "../../../name_resolver";
 
+import { isEmpty } from "ramda";
 import "@uppy/core/dist/style.css";
 import "@uppy/dashboard/dist/style.css";
 
@@ -120,6 +121,7 @@ const PageVerificationInfo = ({ pageResult }: { pageResult: PageResult }) => {
     //@ts-ignore
     // out = await nameResolver.resolveNamesRawText(out);
     console.log(out);
+
     setVerificationLog(out);
   }
 
@@ -226,7 +228,9 @@ const PageVerificationInfo = ({ pageResult }: { pageResult: PageResult }) => {
             pageTitle={pageTitle}
             verificationStatus={verificationStatus}
           />
-          <VerificationLog verificationLog={verificationLog} />
+          {!isEmpty(verificationLog) && (
+            <VerificationLog verificationLog={verificationLog} />
+          )}
           <div dangerouslySetInnerHTML={{ __html: wikiPage }}></div>
         </VStack>
       )}

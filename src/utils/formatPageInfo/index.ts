@@ -1,6 +1,21 @@
 import formatRevisionInfo from "./formatRevisionInfo";
-
+import { pathOr } from "ramda";
 const ERROR_VERIFICATION_STATUS = "ERROR";
+const INVALID_VERIFICATION_STATUS = "INVALID";
+import { formatDBTimestamp } from "./helpers";
+
+export type RevisionProps = {
+  id: number;
+  url: string;
+  time: string;
+  domainId: number; // date
+  isVerified: boolean;
+};
+
+type RevisionsData = {
+  count: number;
+  revisions: RevisionProps[];
+};
 
 const formatPageInfo = (
   serverUrl: string,
@@ -9,7 +24,7 @@ const formatPageInfo = (
   //@ts-ignore
   details: any,
   verbose: boolean
-) => {
+): RevisionsData | string => {
   if (status === "NORECORD") {
     return "No revision record";
   } else if (status === "N/A" || !details) {
@@ -21,42 +36,34 @@ const formatPageInfo = (
     return "ERROR: Unknown cause";
   }
 
-  // const _space2 = "&nbsp&nbsp";
   const numRevisions = details.verification_hashes.length;
-  console.log({ numRevisions });
-  console.log({ details });
-  // let finalOutput = `Number of Verified Page Revisions: ${numRevisions}<br>`;
 
-  // let out = "";
-  let revisionsArray = details.revision_details.map((revisionDetail: any) => {
-    const { data } = revisionDetail;
+  let revisions = details.revision_details.map((revisionDetail: any) => {
+    const { data, status } = revisionDetail;
     const { rev_id } = data.content;
 
+    const timestamp = pathOr(null, ["metadata", "time_stamp"], data);
+    const domainId = pathOr(null, ["metadata", "domain_id"], data);
+    const verification = pathOr(null, ["verification"], status);
     return {
-      rev_id,
-      revisionIdUrl: `${serverUrl}/index.php?title=${title}&oldid=${rev_id}`,
+      id: rev_id,
+      url: `${serverUrl}/index.php?title=${title}&oldid=${rev_id}`,
+      time: formatDBTimestamp(timestamp),
+      domainId: parseInt(domainId!),
+      isVerified: verification === "VERIFIED" ? true : false,
     };
   });
 
-  let output;
-
-  // if (revisionsArray.length === details.revision_details.length) {
-  output = {
-    count: details.revision_details.length,
-    revisionsArray,
+  let data;
+  data = {
+    count: numRevisions,
+    revisions,
   };
-  // } else {
-  //   output = {
-  //     loading: true,
-  //   };
-  // }
 
-  console.log({ output });
-  return output;
+  console.log("format data", { data });
+  return data;
 
   // for (let i = 0; i < details.revision_details.length; i++) {
-  //   debugger;
-  //   console.log({ i });
   //   let revisionOut = "";
   //   if (i % 2 == 0) {
   //     revisionOut += '<div style="background: LightCyan;">';

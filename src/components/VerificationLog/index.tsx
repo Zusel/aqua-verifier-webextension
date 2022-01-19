@@ -4,14 +4,14 @@ interface VerificationLogProps {
   verificationLog: any;
 }
 
-const Revision = (revId: any) => {
-  console.log(revId);
+const Revision = (revId: any, key: number) => {
+  console.log({ revId });
   return (
-    <ListItem key={revId}>
+    <ListItem key={key}>
       Verification of{" "}
-      <a href={revId} target="_blank">
+      {/* <a href={revId} target="_blank">
         Revision ID {revId}
-      </a>
+      </a> */}
     </ListItem>
   );
 };
@@ -21,7 +21,7 @@ const VerificationLog = ({ verificationLog }: VerificationLogProps) => {
   console.log({ verificationLog });
   console.log({ revisionsArray });
   return (
-    <Box mb={4}>
+    <Box p={4} mb={4}>
       <Heading as="h3" mb={2}>
         <Badge fontSize="inherit" colorScheme="green" variant="solid" mr={2}>
           {count}
@@ -30,9 +30,9 @@ const VerificationLog = ({ verificationLog }: VerificationLogProps) => {
       </Heading>
       <OrderedList spacing={3}>
         {revisionsArray &&
-          revisionsArray.map((revision: any) => {
+          revisionsArray.map((revision: any, index: number) => {
             const { rev_id } = revision;
-            return <Revision revId={rev_id} />;
+            return <Revision revId={rev_id} key={index} />;
           })}
       </OrderedList>
     </Box>

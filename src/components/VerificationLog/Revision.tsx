@@ -9,14 +9,14 @@ import type { RevisionProps } from "../../utils/formatPageInfo";
 const VerificationHash = ({ isVerified }: { isVerified: boolean }) => {
   return (
     <Flex alignItems="center">
-      {isVerified ? (
-        <CheckCircleIcon color="green" boxSize={6} />
-      ) : (
-        <WarningTwoIcon color="red" boxSize={6} />
-      )}
-      <Text ml={4}>
+      <Text mr={4}>
         Verificiation hash {isVerified ? `matches` : " does not match"}
       </Text>
+      {isVerified ? (
+        <CheckCircleIcon color="success" boxSize={6} />
+      ) : (
+        <WarningTwoIcon color="error" boxSize={6} />
+      )}
     </Flex>
   );
 };
@@ -33,7 +33,7 @@ const Revision = ({
     <ListItem key={key}>
       <Link href={url} target="_blank" isExternal textDecoration="underline">
         Revision ID: <b>{id}</b>
-        <ExternalLinkIcon color="blue" boxSize={4} />
+        <ExternalLinkIcon color="blue" boxSize={4} ml={2} />
       </Link>
       <Text>{time}</Text>
       <Text>

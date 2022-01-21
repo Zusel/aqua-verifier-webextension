@@ -64,7 +64,7 @@ const EditableCell = ({
   updateMyData, // This is a custom function that we supplied to our table instance
 }) => {
   // We need to keep and update the state of the cell normally
-  const [value, setValue] = React.useState(initialValue);
+  const [value, setValue] = React.useState(initialValue ?? "");
 
   //if (id === "walletAddress") {
   //  // walletAddress must be read-only.
@@ -281,9 +281,10 @@ const App = () => {
         // If this happens, we just ignore the row.
         continue;
       }
+      const clone = Object.assign({}, e)
       // We delete the wallet address from the entry to save space.
-      delete e.walletAddress;
-      hashmapData[walletAddress] = e;
+      delete clone.walletAddress;
+      hashmapData[walletAddress] = clone;
     }
     chrome.storage.sync.set({ [storageKey]: JSON.stringify(hashmapData) });
     setShowSaveSuccess(true);

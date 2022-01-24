@@ -271,11 +271,20 @@ const App = () => {
     prepareNameResolutionEnabled().then(setNameResolutionEnabled);
   }, []);
 
-  const saveData = () => {
+  const saveData = (arg: React.SyntheticEvent | object[]) => {
     // Convert the array data to a hash map structure.
     // This automatically deduplicates the array based on the walletAddress.
+    let d;
+    if ("currentTarget" in arg) {
+      // If saveData is called from button click
+      d = data;
+    } else {
+      // If save data is called from file upload, then arg is
+      // the name list imported from the file.
+      d = arg
+    }
     const hashmapData = {};
-    for (const e of data) {
+    for (const e of d) {
       const walletAddress = e.walletAddress;
       if (!walletAddress) {
         // If this happens, we just ignore the row.
@@ -288,6 +297,25 @@ const App = () => {
     }
     chrome.storage.sync.set({ [storageKey]: JSON.stringify(hashmapData) });
     setShowSaveSuccess(true);
+  };
+
+  const importFile = () => {
+    const filesElements = document.getElementById("file") as HTMLInputElement;
+    if (!(filesElements && filesElements.files && filesElements.files[0])) {
+      return
+    }
+    const file = filesElements.files![0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (!(e && e.target && e.target.result)) {
+        return;
+      }
+      const parsed = JSON.parse(e.target.result as string);
+      const newData = data.concat(parsed);
+      setData(newData);
+      saveData(newData);
+    };
+    reader.readAsText(file);
   };
 
   const saveNameResolutionEnabled = (enabled) => {
@@ -315,6 +343,11 @@ const App = () => {
       <button className="btn btn-secondary mr-2" onClick={onAddRowClick}>
         Add entry
       </button>
+      <input
+        type="file"
+        id="file"
+        onChange={importFile}
+      />
       <div>
         <label>
           Enable name resolution{" "}

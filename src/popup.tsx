@@ -25,6 +25,8 @@ import {
 import { formatPageInfo2HTML } from "data-accounting-external-verifier";
 import Layout from "./components/Layout";
 
+import * as nameResolver from "./name_resolver"
+
 // This object is actually used! It's used in the output of formatPageInfo2HTML
 // HTML string output from "data-accounting-external-verifier".
 const clipboard = new Clipboard(".clipboard-button");
@@ -82,15 +84,17 @@ const Popup = () => {
     );
   }, []);
 
-  function formatDetailsAndSetVerificationLog(data: { [key: string]: any }) {
+  async function formatDetailsAndSetVerificationLog(data: { [key: string]: any }) {
     const verbose = false;
-    const out = formatPageInfo2HTML(
+    let out = formatPageInfo2HTML(
       data.serverUrl,
       data.title,
       data.status,
       data.details,
       verbose
     );
+    // Resolve the names
+    out = await nameResolver.resolveNamesRawText(out);
     setVerificationLog(out);
   }
 

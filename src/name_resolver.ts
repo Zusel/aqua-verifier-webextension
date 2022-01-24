@@ -37,6 +37,23 @@ export function replaceAllAddresses(html: HTMLElement, addressesHashMap: any) {
   }
 }
 
+function replaceAllAddressesRawText(text: string, addressesHashMap: any) {
+  // The difference with replaceAllAddresses is that the input is a raw text
+  // instead of HTMLElement.
+  let out = text
+  for (const [walletAddress, e] of Object.entries(addressesHashMap)) {
+    // `e` is untyped.
+    // @ts-ignore
+    if (!("nickName" in e)) {
+      continue;
+    }
+    // @ts-ignore
+    const nickName = e.nickName as string;
+    out = text.replace(new RegExp(walletAddress, "g"), nickName);
+  }
+  return out
+}
+
 const nameResolutionEnabledKey = "data_accounting_name_resolution_enabled_state";
 
 async function getEnabledState() {
@@ -62,4 +79,12 @@ export async function getNameResolutionTable() {
     return null;
   }
   return JSON.parse(d[storageKey]);
+}
+
+export async function resolveNamesRawText(text: string) {
+  const parsedTable = await getNameResolutionTable();
+  if (parsedTable) {
+    return replaceAllAddressesRawText(text, parsedTable);
+  }
+  return text;
 }

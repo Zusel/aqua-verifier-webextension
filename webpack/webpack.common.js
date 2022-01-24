@@ -9,7 +9,7 @@ module.exports = {
     background: path.join(srcDir, "background.ts"),
     offline_verification: path.join(srcDir, "offline_verification.tsx"),
     name_resolver: path.join(srcDir, "name_resolver.ts"),
-    name_resolution: path.join(srcDir, "name_resolution.tsx"),
+    name_resolution_configuration: path.join(srcDir, "name_resolution_configuration.tsx"),
     content_script: {
       import: path.join(srcDir, "content_script.tsx"),
       dependOn: "name_resolver"

@@ -14,7 +14,7 @@
     {
       "matches": ["<all_urls>"],
       "run_at": "document_end",
-      "js": ["js/content_script.js"]
+      "js": ["js/name_resolver.js", "js/content_script.js"]
     }
   ],
 

@@ -8,8 +8,12 @@ module.exports = {
     popup: path.join(srcDir, "popup.tsx"),
     background: path.join(srcDir, "background.ts"),
     offline_verification: path.join(srcDir, "offline_verification.tsx"),
+    name_resolver: path.join(srcDir, "name_resolver.ts"),
     name_resolution: path.join(srcDir, "name_resolution.tsx"),
-    content_script: path.join(srcDir, "content_script.tsx"),
+    content_script: {
+      import: path.join(srcDir, "content_script.tsx"),
+      dependOn: "name_resolver"
+    },
   },
   output: {
     path: path.join(__dirname, "../dist/js"),

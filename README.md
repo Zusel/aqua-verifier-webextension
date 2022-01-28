@@ -3,8 +3,8 @@
 # VerifyPage - Chrome Browser Extension
 You can install this extension from the Chrome-App-Store [here](https://chrome.google.com/webstore/detail/verifypage/gadnjidhhadchnegnpadkibmjlgihiaj?hl=en-US). Current Version 1.2.1
 
-This is a verification client for the micro-pkc https://github.com/inblockio/micro-PKC
-it uses the CLI verification tool as an external dependency https://github.com/inblockio/data-accounting-external-verifier. If you want the latest build, or you want to build it yourself, follow the instructions given here.
+This is a verification client for the micro-pkc https://github.com/inblockio/aqua-PKC
+it uses the CLI verification tool as an external dependency https://github.com/inblockio/aqua-verifier-js. If you want the latest build, or you want to build it yourself, follow the instructions given here.
 
 Chrome Extension, TypeScript, HTML
 

@@ -6,10 +6,11 @@ import wtf from "wtf_wikipedia";
 import VerificationLog from "../../VerificationLog";
 import VerificationSummary from "../../VerificationSummary";
 import * as nameResolver from "../../../name_resolver";
-
+import b64toBlob from "./utils/b64toBlob";
 import { isEmpty } from "ramda";
 import "@uppy/core/dist/style.css";
 import "@uppy/dashboard/dist/style.css";
+import type { Witness } from "../../../types";
 
 import wtfPluginHtml from "wtf-plugin-html";
 // This is taking 154 KiB space of the vendor.js bundle.
@@ -51,27 +52,6 @@ const supportedImageExtensions = [
   "svg",
   "webp",
 ];
-// See https://stackoverflow.com/questions/16245767/creating-a-blob-from-a-base64-string-in-javascript.
-// TODO Maybe it'd be much simpler using fetch(); see the other answers in the URL above.
-const b64toBlob = (b64Data: string, contentType = "", sliceSize = 512) => {
-  const byteCharacters = atob(b64Data);
-  const byteArrays = [];
-
-  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-    const slice = byteCharacters.slice(offset, offset + sliceSize);
-
-    const byteNumbers = new Array(slice.length);
-    for (let i = 0; i < slice.length; i++) {
-      byteNumbers[i] = slice.charCodeAt(i);
-    }
-
-    const byteArray = new Uint8Array(byteNumbers);
-    byteArrays.push(byteArray);
-  }
-
-  const blob = new Blob(byteArrays, { type: contentType });
-  return blob;
-};
 
 export type PageResult = {
   genesis_hash: string;
@@ -81,6 +61,32 @@ export type PageResult = {
   namespace: number;
   chain_height: number;
   revisions: object;
+};
+
+const parseWitness = async (witnessData: Witness) => {
+  const {
+    smart_contract_address,
+    witness_event_transaction_hash,
+    sender_account_address,
+  } = witnessData;
+  console.log("parseWitness", { witnessData });
+
+  const parsedWitness = {
+    ...witnessData,
+    smart_contract_address: await nameResolver.resolveNamesRawText(
+      smart_contract_address
+    ),
+    witness_event_transaction_hash: await nameResolver.resolveNamesRawText(
+      witness_event_transaction_hash
+    ),
+    sender_account_address: await nameResolver.resolveNamesRawText(
+      sender_account_address
+    ),
+  };
+
+  console.log({ parsedWitness });
+
+  return parsedWitness;
 };
 
 const PageVerificationInfo = ({ pageResult }: { pageResult: PageResult }) => {
@@ -107,21 +113,47 @@ const PageVerificationInfo = ({ pageResult }: { pageResult: PageResult }) => {
   async function formatDetailsAndSetVerificationLog(data: {
     [key: string]: any;
   }) {
-    const verbose = false;
-    console.log({ data });
-    const out = formatPageInfo(
+    console.log("preformatted data", { data });
+    let out = await formatPageInfo(
       data.serverUrl,
       data.title,
       data.status,
-      data.details,
-      verbose
+      data.details
     );
+
+    console.log("FORMATTED out", { out });
+
     // Resolve the names
     // TODO: which fields need name to be resolved? only apply to those fields
     //@ts-ignore
     // out = await nameResolver.resolveNamesRawText(out);
-    console.log(out);
+    // console.log(out.revisions);
 
+    // let updatedRevisions;
+    // if (out["revisions"].length) {
+    //   const revisionsToNameResolve = out.revisions;
+    //   console.log("lets resolve these!", { revisionsToNameResolve });
+    //   updatedRevisions = await Promise.all(
+    //     revisionsToNameResolve.map(async (revision: any) => {
+    //       const { unNameResolvedWitness } = revision;
+    //       const nameResolved =
+    //         unNameResolvedWitness &&
+    //         (await parseWitness(unNameResolvedWitness));
+    //       console.log({ nameResolved });
+
+    //       return {
+    //         ...revision,
+    //         nameResolvedWitness: nameResolved,
+    //       };
+    //     })
+    //   );
+
+    //   //replace revisions in output with updated revisions
+
+    //   console.log({ updatedRevisions });
+    // }
+
+    // handle async stuff here??
     setVerificationLog(out);
   }
 

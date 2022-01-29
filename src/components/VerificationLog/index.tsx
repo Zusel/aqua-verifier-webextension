@@ -29,15 +29,17 @@ const VerificationLog = ({ verificationLog }: VerificationLogProps) => {
           </Heading>
           <OrderedList spacing={3}>
             {revisions.map((revision: RevisionProps, index: number) => {
-              const { id, url, time, isVerified, domainId } = revision;
               return (
                 <Revision
-                  id={id}
                   key={index}
-                  url={url}
-                  time={time}
-                  isVerified={isVerified}
-                  domainId={domainId}
+                  id={revision.id}
+                  url={revision.url}
+                  time={revision.time}
+                  isVerified={revision.isVerified}
+                  domainId={revision.domainId}
+                  witness={revision.witness}
+                  witnessDetail={revision.witnessDetail}
+                  signature={revision.signature}
                 />
               );
             })}

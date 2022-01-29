@@ -3,6 +3,8 @@ import { pathOr } from "ramda";
 const ERROR_VERIFICATION_STATUS = "ERROR";
 const INVALID_VERIFICATION_STATUS = "INVALID";
 import { formatDBTimestamp } from "./helpers";
+import type { Signature, Witness } from "../../types";
+import { resolveNameByAddress } from "../../name_resolver";
 
 export type RevisionProps = {
   id: number;
@@ -10,94 +12,101 @@ export type RevisionProps = {
   time: string;
   domainId: number; // date
   isVerified: boolean;
+  witnessDetail: string;
+  witness: Witness;
+  signature: Signature;
 };
 
 type RevisionsData = {
+  formatStatus?: string;
   count: number;
   revisions: RevisionProps[];
 };
 
-const formatPageInfo = (
+const parseWitness = async (witnessData: Witness) => {
+  const {
+    smart_contract_address,
+    witness_event_transaction_hash,
+    sender_account_address,
+  } = witnessData;
+
+  const parsed = {
+    ...witnessData,
+    smart_contract_address: await resolveNameByAddress(smart_contract_address),
+    witness_event_transaction_hash: await resolveNameByAddress(
+      witness_event_transaction_hash
+    ),
+    sender_account_address: await resolveNameByAddress(sender_account_address),
+  };
+
+  return parsed;
+};
+const parseSignature = async (signatureData: Signature) => {
+  const parsed = {
+    signature: await resolveNameByAddress(signatureData.signature),
+    public_key: await resolveNameByAddress(signatureData.public_key),
+    wallet_address: await resolveNameByAddress(signatureData.wallet_address),
+    signature_hash: await resolveNameByAddress(signatureData.signature_hash),
+  };
+
+  return parsed;
+};
+
+const formatPageInfo = async (
   serverUrl: string,
   title: string,
   status: string,
-  //@ts-ignore
-  details: any,
-  verbose: boolean
-): RevisionsData | string => {
+  details: any
+): Promise<RevisionsData> => {
+  let formatStatus;
   if (status === "NORECORD") {
-    return "No revision record";
+    formatStatus = "No revision record";
   } else if (status === "N/A" || !details) {
-    return "";
+    formatStatus = "";
   } else if (status === ERROR_VERIFICATION_STATUS) {
     if (details && "error" in details) {
-      return "ERROR: " + details.error;
+      formatStatus = `ERROR: ${details.error}`;
     }
-    return "ERROR: Unknown cause";
+    formatStatus = "ERROR: Unknown cause";
   }
 
   const numRevisions = details.verification_hashes.length;
 
-  let revisions = details.revision_details.map((revisionDetail: any) => {
-    const { data, status } = revisionDetail;
-    const { rev_id } = data.content;
+  let revisions = await Promise.all(
+    details.revision_details.map(async (revisionDetail: any): Promise<any> => {
+      formatStatus = "Success";
+      const { data, status, witness_detail } = await revisionDetail;
+      const { rev_id } = data.content;
 
-    const timestamp = pathOr(null, ["metadata", "time_stamp"], data);
-    const domainId = pathOr(null, ["metadata", "domain_id"], data);
-    const verification = pathOr(null, ["verification"], status);
-    return {
-      id: rev_id,
-      url: `${serverUrl}/index.php?title=${title}&oldid=${rev_id}`,
-      time: formatDBTimestamp(timestamp),
-      domainId: parseInt(domainId!),
-      isVerified: verification === "VERIFIED" ? true : false,
-    };
-  });
+      const timestamp = pathOr(null, ["metadata", "time_stamp"], data);
+      const domainId = pathOr(null, ["metadata", "domain_id"], data);
+      const verification = pathOr(null, ["verification"], status);
+      const witness = pathOr(null, ["witness"], data);
+      const signature = pathOr(null, ["signature"], data);
+      const witnessDetail = witness_detail;
+
+      return {
+        id: rev_id,
+        url: `${serverUrl}/index.php?title=${title}&oldid=${rev_id}`,
+        time: formatDBTimestamp(timestamp),
+        domainId: parseInt(domainId!),
+        isVerified: verification === "VERIFIED" ? true : false,
+        witnessDetail,
+        witness: witness && (await parseWitness(witness)),
+        signature: signature && (await parseSignature(signature)),
+      };
+    })
+  );
+  console.log({ revisions });
 
   let data;
   data = {
+    formatStatus,
     count: numRevisions,
-    revisions,
+    revisions: revisions,
   };
 
-  console.log("format data", { data });
   return data;
-
-  // for (let i = 0; i < details.revision_details.length; i++) {
-  //   let revisionOut = "";
-  //   if (i % 2 == 0) {
-  //     revisionOut += '<div style="background: LightCyan;">';
-  //   } else {
-  //     revisionOut += "<div>";
-  //   }
-  //   console.log({ revisionOut });
-  //   const revid = details.revision_details[i].data.content.rev_id;
-  //   const revidURL = `${serverUrl}/index.php?title=${title}&oldid=${revid}`;
-  //   const [summary, formattedRevInfo] = formatRevisionInfo(
-  //     serverUrl,
-  //     details.revision_details[i],
-  //     verbose
-  //   );
-  //   revisionOut += `${
-  //     i + 1
-  //   }. Verification of <a href='${revidURL}' target="_blank">Revision ID ${revid}<a>.${summary}<br>`;
-  //   revisionOut += formattedRevInfo;
-  //   const count = i + 1;
-  //   revisionOut += `${_space2}Progress: ${count} / ${numRevisions} (${(
-  //     (100 * count) /
-  //     numRevisions
-  //   ).toFixed(1)}%)<br>`;
-  //   revisionOut += "</div>";
-  //   // We order the output by the most recent revision shown first.
-  //   out = revisionOut + out;
-  //   console.log({ out });
-  // }
-  // finalOutput += out;
-
-  // console.log("finalOutput", finalOutput);
-  // return {
-  //   numRevisions,
-  // };
 };
 
 export default formatPageInfo;

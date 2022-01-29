@@ -1,4 +1,4 @@
-import { Link, ListItem, Text, Flex } from "@chakra-ui/react";
+import { Link, ListItem, Text, Flex, Box } from "@chakra-ui/react";
 import {
   CheckCircleIcon,
   WarningTwoIcon,
@@ -21,14 +21,31 @@ const VerificationHash = ({ isVerified }: { isVerified: boolean }) => {
   );
 };
 
+const RenderWitnessDetail = ({ witnessDetail }: { witnessDetail: string }) => {
+  return (
+    <Box py={2}>
+      {/* render as dangerous HTML for now 
+        TODO: witnessDetail as properties
+      */}
+      <div dangerouslySetInnerHTML={{ __html: witnessDetail }} />
+    </Box>
+  );
+};
+
 const Revision = ({
   id,
   url,
   time,
   domainId,
   isVerified,
+  witnessDetail,
+  witness,
+  signature,
   key,
 }: RevisionProps & { key: number }) => {
+  console.log({ signature });
+
+  // Next steps: render signature and witness info
   return (
     <ListItem key={key}>
       <Link href={url} target="_blank" isExternal textDecoration="underline">
@@ -40,6 +57,7 @@ const Revision = ({
         Domain ID: <b>{domainId}</b>
       </Text>
       <VerificationHash isVerified={isVerified} />
+      {witnessDetail && <RenderWitnessDetail witnessDetail={witnessDetail} />}
     </ListItem>
   );
 };

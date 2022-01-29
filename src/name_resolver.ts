@@ -40,7 +40,7 @@ export function replaceAllAddresses(html: HTMLElement, addressesHashMap: any) {
 function replaceAllAddressesRawText(text: string, addressesHashMap: any) {
   // The difference with replaceAllAddresses is that the input is a raw text
   // instead of HTMLElement.
-  let out = text
+  let out = text;
   for (const [walletAddress, e] of Object.entries(addressesHashMap)) {
     // `e` is untyped.
     // @ts-ignore
@@ -49,12 +49,16 @@ function replaceAllAddressesRawText(text: string, addressesHashMap: any) {
     }
     // @ts-ignore
     const nickName = e.nickName as string;
+    console.log({ text });
+
     out = text.replace(new RegExp(walletAddress, "g"), nickName);
+    console.log({ out });
   }
-  return out
+  return out;
 }
 
-const nameResolutionEnabledKey = "data_accounting_name_resolution_enabled_state";
+const nameResolutionEnabledKey =
+  "data_accounting_name_resolution_enabled_state";
 
 async function getEnabledState() {
   const dEnabled = await chrome.storage.sync.get(nameResolutionEnabledKey);
@@ -73,7 +77,6 @@ export async function getNameResolutionTable() {
     // Just do nothing if name resolution is disabled
     return null;
   }
-
   const d = await chrome.storage.sync.get(storageKey);
   if (!d[storageKey]) {
     return null;
@@ -81,10 +84,27 @@ export async function getNameResolutionTable() {
   return JSON.parse(d[storageKey]);
 }
 
+export async function resolveNameByAddress(address: string) {
+  const parsedTable = await getNameResolutionTable();
+
+  const keyExists = parsedTable[address];
+
+  let out = address;
+  if (keyExists) {
+    out = keyExists.nickName;
+  }
+
+  return out;
+}
+
 export async function resolveNamesRawText(text: string) {
   const parsedTable = await getNameResolutionTable();
   if (parsedTable) {
-    return replaceAllAddressesRawText(text, parsedTable);
+    console.log({ text });
+    const res = replaceAllAddressesRawText(text, parsedTable);
+    console.log({ res });
+    return res;
   }
+
   return text;
 }

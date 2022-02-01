@@ -22,9 +22,11 @@ export type Witness = {
   structured_merkle_proof: StructuredMerkleProof[];
 };
 
-export type Signature = {
+export type SignatureData = {
   signature: string;
   public_key: string;
   wallet_address: string;
   signature_hash: string;
 };
+
+export type SignatureStatus = "VALID" | "MISSING" | undefined;

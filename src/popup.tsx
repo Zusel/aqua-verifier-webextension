@@ -12,7 +12,6 @@ import {
 import { WarningTwoIcon, LockIcon, CalendarIcon } from "@chakra-ui/icons";
 import Clipboard from "clipboard";
 import VerificationSummary from "./components/VerificationSummary/index";
-import VerificationLog from "./components/VerificationLog";
 import "./assets/scss/styles.scss";
 
 import {
@@ -97,8 +96,11 @@ const Popup = () => {
       data.details,
       verbose
     );
-    // Resolve the names
-    out = await nameResolver.resolveNamesRawText(out);
+    const nameResolverEnabled = await nameResolver.getEnabledState();
+    if (nameResolverEnabled) {
+      // Resolve the names
+      out = await nameResolver.resolveNamesRawText(out);
+    }
     setVerificationLog(out);
   }
 

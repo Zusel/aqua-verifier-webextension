@@ -1,26 +1,30 @@
-import formatRevisionInfo from "./formatRevisionInfo";
 import { pathOr } from "ramda";
-const ERROR_VERIFICATION_STATUS = "ERROR";
-const INVALID_VERIFICATION_STATUS = "INVALID";
-import { formatDBTimestamp } from "./helpers";
-import type { Signature, Witness } from "../../types";
-import { resolveNameByAddress } from "../../name_resolver";
+
+import formatDBTimestamp from "./formatDBTimestamp";
+import type { SignatureData, Witness, SignatureStatus } from "../../types";
+import * as nameResolver from "../../name_resolver";
 
 export type RevisionProps = {
   id: number;
   url: string;
-  time: string;
-  domainId: number; // date
+  time: string; // date
+  domainId: string;
   isVerified: boolean;
   witnessDetail: string;
   witness: Witness;
-  signature: Signature;
+  signatureDetails: SignatureDetails;
 };
 
-type RevisionsData = {
+export type SignatureDetails = {
+  signatureStatus: SignatureStatus;
+  walletUrl: string;
+  walletAddress: string;
+};
+
+export type FormattedRevisionsData = {
   formatStatus?: string;
-  count: number;
-  revisions: RevisionProps[];
+  count?: number;
+  revisions?: RevisionProps[];
 };
 
 const parseWitness = async (witnessData: Witness) => {
@@ -30,26 +34,18 @@ const parseWitness = async (witnessData: Witness) => {
     sender_account_address,
   } = witnessData;
 
-  const parsed = {
+  return {
     ...witnessData,
-    smart_contract_address: await resolveNameByAddress(smart_contract_address),
-    witness_event_transaction_hash: await resolveNameByAddress(
+    smart_contract_address: await nameResolver.resolveNameByAddress(
+      smart_contract_address
+    ),
+    witness_event_transaction_hash: await nameResolver.resolveNameByAddress(
       witness_event_transaction_hash
     ),
-    sender_account_address: await resolveNameByAddress(sender_account_address),
+    sender_account_address: await nameResolver.resolveNameByAddress(
+      sender_account_address
+    ),
   };
-
-  return parsed;
-};
-const parseSignature = async (signatureData: Signature) => {
-  const parsed = {
-    signature: await resolveNameByAddress(signatureData.signature),
-    public_key: await resolveNameByAddress(signatureData.public_key),
-    wallet_address: await resolveNameByAddress(signatureData.wallet_address),
-    signature_hash: await resolveNameByAddress(signatureData.signature_hash),
-  };
-
-  return parsed;
 };
 
 const formatPageInfo = async (
@@ -57,20 +53,26 @@ const formatPageInfo = async (
   title: string,
   status: string,
   details: any
-): Promise<RevisionsData> => {
+): Promise<FormattedRevisionsData> => {
   let formatStatus;
   if (status === "NORECORD") {
     formatStatus = "No revision record";
+    return { formatStatus };
   } else if (status === "N/A" || !details) {
     formatStatus = "";
-  } else if (status === ERROR_VERIFICATION_STATUS) {
+    return { formatStatus };
+  } else if (status === "ERROR") {
     if (details && "error" in details) {
       formatStatus = `ERROR: ${details.error}`;
+      return { formatStatus };
     }
     formatStatus = "ERROR: Unknown cause";
+    return { formatStatus };
   }
 
-  const numRevisions = details.verification_hashes.length;
+  const nameResolverEnabled = await nameResolver.getEnabledState();
+
+  const count = details.verification_hashes.length;
 
   let revisions = await Promise.all(
     details.revision_details.map(async (revisionDetail: any): Promise<any> => {
@@ -78,35 +80,49 @@ const formatPageInfo = async (
       const { data, status, witness_detail } = await revisionDetail;
       const { rev_id } = data.content;
 
-      const timestamp = pathOr(null, ["metadata", "time_stamp"], data);
-      const domainId = pathOr(null, ["metadata", "domain_id"], data);
-      const verification = pathOr(null, ["verification"], status);
-      const witness = pathOr(null, ["witness"], data);
-      const signature = pathOr(null, ["signature"], data);
+      const timestamp = pathOr("", ["metadata", "time_stamp"], data);
+      const domainId = pathOr("", ["metadata", "domain_id"], data);
+      const verification = pathOr("", ["verification"], status);
+      const witness = pathOr("", ["witness"], data);
+      const signatureData = pathOr("", ["signature"], data);
       const witnessDetail = witness_detail;
+
+      const walletAddress = async (signatureData: SignatureData) => {
+        let out;
+        out = signatureData.wallet_address;
+        if (nameResolverEnabled) {
+          out = await nameResolver.resolveNameByAddress(
+            signatureData.wallet_address
+          );
+        }
+        return out;
+      };
+
+      const signatureDetails = {
+        signatureStatus: status.signature,
+        walletUrl:
+          walletAddress && `${serverUrl}/index.php/User:${walletAddress}`,
+        walletAddress: signatureData && (await walletAddress(signatureData)),
+      };
 
       return {
         id: rev_id,
         url: `${serverUrl}/index.php?title=${title}&oldid=${rev_id}`,
-        time: formatDBTimestamp(timestamp),
-        domainId: parseInt(domainId!),
-        isVerified: verification === "VERIFIED" ? true : false,
+        time: timestamp && formatDBTimestamp(timestamp),
+        domainId,
+        isVerified: verification && verification === "VERIFIED" ? true : false,
         witnessDetail,
         witness: witness && (await parseWitness(witness)),
-        signature: signature && (await parseSignature(signature)),
+        signatureDetails,
       };
     })
   );
-  console.log({ revisions });
 
-  let data;
-  data = {
+  return {
+    count,
     formatStatus,
-    count: numRevisions,
-    revisions: revisions,
+    revisions,
   };
-
-  return data;
 };
 
 export default formatPageInfo;

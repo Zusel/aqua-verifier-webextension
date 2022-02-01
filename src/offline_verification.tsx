@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import Clipboard from "clipboard";
 import wtf from "wtf_wikipedia";
 import wtfPluginHtml from "wtf-plugin-html";
-import { Center } from "@chakra-ui/react";
+import { Center, VStack } from "@chakra-ui/react";
 
 import Uppy from "@uppy/core";
 import { Dashboard } from "@uppy/react";
@@ -70,7 +70,7 @@ const OfflineVerification = () => {
 
   return (
     <Layout pageSubtitle="OFFLINE">
-      <Center marginTop={4}>
+      <Center marginY={4}>
         <Dashboard
           uppy={uppy}
           {...propsDashBoard}
@@ -78,9 +78,11 @@ const OfflineVerification = () => {
           note="Drag a single JSON file only"
         />
       </Center>
-      {pages.map((page, index) => (
-        <PageVerificationInfo key={index} pageResult={page} />
-      ))}
+      <VStack spacing={8}>
+        {pages.map((page, index) => (
+          <PageVerificationInfo key={index} pageResult={page} index={index} />
+        ))}
+      </VStack>
     </Layout>
   );
 };

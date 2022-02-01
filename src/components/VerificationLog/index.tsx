@@ -1,15 +1,24 @@
-import { Heading, Box, Badge, OrderedList, Progress } from "@chakra-ui/react";
-import Revision from "./Revision";
-import { pathOr } from "ramda";
+import {
+  Heading,
+  Box,
+  Badge,
+  Progress,
+  Table,
+  Thead,
+  Tbody,
+  TableCaption,
+  Tr,
+  Th,
+} from "@chakra-ui/react";
+import RevisionRow from "./RevisionRow";
 
 interface VerificationLogProps {
   verificationLog: any;
 }
 import type { RevisionProps } from "../../utils/formatPageInfo";
-
+// TODO: use better Revision typing
 const VerificationLog = ({ verificationLog }: VerificationLogProps) => {
   const { count, revisions } = verificationLog;
-  console.log({ verificationLog });
   return (
     <Box p={4} mb={4}>
       {!count ? (
@@ -27,23 +36,23 @@ const VerificationLog = ({ verificationLog }: VerificationLogProps) => {
             </Badge>
             Verified Page Revisions
           </Heading>
-          <OrderedList spacing={3}>
-            {revisions.map((revision: RevisionProps, index: number) => {
-              return (
-                <Revision
-                  key={index}
-                  id={revision.id}
-                  url={revision.url}
-                  time={revision.time}
-                  isVerified={revision.isVerified}
-                  domainId={revision.domainId}
-                  witness={revision.witness}
-                  witnessDetail={revision.witnessDetail}
-                  signature={revision.signature}
-                />
-              );
-            })}
-          </OrderedList>
+          <Table variant="striped" size="md">
+            <Thead>
+              <Tr>
+                <Th>ID</Th>
+                <Th>Time (UTC)</Th>
+                <Th>Domain ID</Th>
+                <Th>Verification Hash Matches</Th>
+                <Th>Witness Event</Th>
+                <Th>Signature</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {revisions.map((revision: RevisionProps, index: number) => (
+                <RevisionRow index={index} revision={revision} />
+              ))}
+            </Tbody>
+          </Table>
         </>
       )}
     </Box>

@@ -49,10 +49,8 @@ function replaceAllAddressesRawText(text: string, addressesHashMap: any) {
     }
     // @ts-ignore
     const nickName = e.nickName as string;
-    console.log({ text });
 
     out = text.replace(new RegExp(walletAddress, "g"), nickName);
-    console.log({ out });
   }
   return out;
 }
@@ -60,7 +58,7 @@ function replaceAllAddressesRawText(text: string, addressesHashMap: any) {
 const nameResolutionEnabledKey =
   "data_accounting_name_resolution_enabled_state";
 
-async function getEnabledState() {
+export async function getEnabledState() {
   const dEnabled = await chrome.storage.sync.get(nameResolutionEnabledKey);
   let enabled = false;
   if (dEnabled[nameResolutionEnabledKey]) {
@@ -100,10 +98,7 @@ export async function resolveNameByAddress(address: string) {
 export async function resolveNamesRawText(text: string) {
   const parsedTable = await getNameResolutionTable();
   if (parsedTable) {
-    console.log({ text });
-    const res = replaceAllAddressesRawText(text, parsedTable);
-    console.log({ res });
-    return res;
+    return replaceAllAddressesRawText(text, parsedTable);
   }
 
   return text;

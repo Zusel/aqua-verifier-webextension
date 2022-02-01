@@ -1,35 +1,33 @@
 import * as http from "http";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import Clipboard from "clipboard";
-import wtf from "wtf_wikipedia";
-import VerificationLog from "../../VerificationLog";
-import VerificationSummary from "../../VerificationSummary";
-import * as nameResolver from "../../../name_resolver";
-import b64toBlob from "./utils/b64toBlob";
-import { isEmpty } from "ramda";
-import "@uppy/core/dist/style.css";
-import "@uppy/dashboard/dist/style.css";
-import type { Witness } from "../../../types";
-
-import wtfPluginHtml from "wtf-plugin-html";
-// This is taking 154 KiB space of the vendor.js bundle.
-// This is because, the database of mime types (mime-db) is big.
-import Mime from "mime-types";
-
-import { verifyPage, verificationStatusMap } from "../../../verifier";
-
-import {
-  verifyPage as externalVerifierVerifyPage,
-  formatPageInfo2HTML,
-} from "data-accounting-external-verifier";
 import {
   Center,
   VStack,
   StackDivider,
   Box,
   CircularProgress,
+  Heading,
+  Badge,
+  Text,
 } from "@chakra-ui/react";
+import Clipboard from "clipboard";
+import wtf from "wtf_wikipedia";
+import VerificationLog from "../../VerificationLog";
+import VerificationSummary from "../../VerificationSummary";
+import b64toBlob from "./utils/b64toBlob";
+import { isEmpty } from "ramda";
+import "@uppy/core/dist/style.css";
+import "@uppy/dashboard/dist/style.css";
+
+import wtfPluginHtml from "wtf-plugin-html";
+// This is taking 154 KiB space of the vendor.js bundle.
+// This is because, the database of mime types (mime-db) is big.
+import Mime from "mime-types";
+
+import { verificationStatusMap } from "../../../verifier";
+
+import { verifyPage as externalVerifierVerifyPage } from "data-accounting-external-verifier";
 import formatPageInfo from "../../../utils/formatPageInfo";
 
 const clipboard = new Clipboard(".clipboard-button");
@@ -63,33 +61,13 @@ export type PageResult = {
   revisions: object;
 };
 
-const parseWitness = async (witnessData: Witness) => {
-  const {
-    smart_contract_address,
-    witness_event_transaction_hash,
-    sender_account_address,
-  } = witnessData;
-  console.log("parseWitness", { witnessData });
-
-  const parsedWitness = {
-    ...witnessData,
-    smart_contract_address: await nameResolver.resolveNamesRawText(
-      smart_contract_address
-    ),
-    witness_event_transaction_hash: await nameResolver.resolveNamesRawText(
-      witness_event_transaction_hash
-    ),
-    sender_account_address: await nameResolver.resolveNamesRawText(
-      sender_account_address
-    ),
-  };
-
-  console.log({ parsedWitness });
-
-  return parsedWitness;
-};
-
-const PageVerificationInfo = ({ pageResult }: { pageResult: PageResult }) => {
+const PageVerificationInfo = ({
+  pageResult,
+  index,
+}: {
+  pageResult: PageResult;
+  index: number;
+}) => {
   const [pageTitle, setPageTitle] = useState("");
   const [verificationStatus, setVerificationStatus] = useState({
     title: "",
@@ -113,7 +91,6 @@ const PageVerificationInfo = ({ pageResult }: { pageResult: PageResult }) => {
   async function formatDetailsAndSetVerificationLog(data: {
     [key: string]: any;
   }) {
-    console.log("preformatted data", { data });
     let out = await formatPageInfo(
       data.serverUrl,
       data.title,
@@ -121,39 +98,6 @@ const PageVerificationInfo = ({ pageResult }: { pageResult: PageResult }) => {
       data.details
     );
 
-    console.log("FORMATTED out", { out });
-
-    // Resolve the names
-    // TODO: which fields need name to be resolved? only apply to those fields
-    //@ts-ignore
-    // out = await nameResolver.resolveNamesRawText(out);
-    // console.log(out.revisions);
-
-    // let updatedRevisions;
-    // if (out["revisions"].length) {
-    //   const revisionsToNameResolve = out.revisions;
-    //   console.log("lets resolve these!", { revisionsToNameResolve });
-    //   updatedRevisions = await Promise.all(
-    //     revisionsToNameResolve.map(async (revision: any) => {
-    //       const { unNameResolvedWitness } = revision;
-    //       const nameResolved =
-    //         unNameResolvedWitness &&
-    //         (await parseWitness(unNameResolvedWitness));
-    //       console.log({ nameResolved });
-
-    //       return {
-    //         ...revision,
-    //         nameResolvedWitness: nameResolved,
-    //       };
-    //     })
-    //   );
-
-    //   //replace revisions in output with updated revisions
-
-    //   console.log({ updatedRevisions });
-    // }
-
-    // handle async stuff here??
     setVerificationLog(out);
   }
 
@@ -241,7 +185,7 @@ const PageVerificationInfo = ({ pageResult }: { pageResult: PageResult }) => {
   }, [pageResult]);
 
   return (
-    <Box w="90%" p={16} m="0 auto" maxW="1200px">
+    <Box p={10} width="90%" minWidth="600px" shadow="lg" borderWidth="2px">
       {!pageTitle ? (
         <Center h="100%">
           <CircularProgress
@@ -263,7 +207,13 @@ const PageVerificationInfo = ({ pageResult }: { pageResult: PageResult }) => {
           {!isEmpty(verificationLog) && (
             <VerificationLog verificationLog={verificationLog} />
           )}
-          <div dangerouslySetInnerHTML={{ __html: wikiPage }}></div>
+          <Box>
+            <Heading as="h3">Page Content</Heading>
+            <div dangerouslySetInnerHTML={{ __html: wikiPage }}></div>
+          </Box>
+          <Box style={{ textAlign: "right" }}>
+            <Text>Page {index + 1}</Text>
+          </Box>
         </VStack>
       )}
     </Box>

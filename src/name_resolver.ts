@@ -70,11 +70,6 @@ export async function getEnabledState() {
 const storageKey = "data_accounting_name_resolution";
 
 export async function getNameResolutionTable() {
-  const nameResolutionIsEnabled = await getEnabledState();
-  if (!nameResolutionIsEnabled) {
-    // Just do nothing if name resolution is disabled
-    return null;
-  }
   const d = await chrome.storage.sync.get(storageKey);
   if (!d[storageKey]) {
     return null;
@@ -83,11 +78,11 @@ export async function getNameResolutionTable() {
 }
 
 export async function resolveNameByAddress(address: string) {
+  let out = address;
+
   const parsedTable = await getNameResolutionTable();
 
   const keyExists = parsedTable[address];
-
-  let out = address;
   if (keyExists) {
     out = keyExists.nickName;
   }

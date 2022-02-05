@@ -6,7 +6,6 @@ import {
   Table,
   Thead,
   Tbody,
-  TableCaption,
   Tr,
   Th,
 } from "@chakra-ui/react";

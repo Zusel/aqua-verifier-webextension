@@ -75,7 +75,6 @@ const WitnessDetail = ({ witnessDetail }: { witnessDetail: string }) => {
 
 const RevisionRow = ({
   revision,
-  index,
 }: {
   revision: RevisionProps;
   index: number;
@@ -93,7 +92,10 @@ const RevisionRow = ({
   return (
     <Tr>
       <Td>{id}</Td>
-      <Td>{time}</Td>
+      <Td>
+        <Text>{time.date}</Text>
+        <Text>{time.time}</Text>
+      </Td>
       <Td>{domainId}</Td>
       <Td>
         <VerificationHash isVerified={isVerified} />

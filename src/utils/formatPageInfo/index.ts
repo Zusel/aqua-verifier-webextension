@@ -1,13 +1,14 @@
 import { pathOr } from "ramda";
 
-import formatDBTimestamp from "./formatDBTimestamp";
+import type { FormatDBTimestampToObject } from "./timestampFormatter";
+import { formatDBTimestampToObject } from "./timestampFormatter";
 import type { SignatureData, Witness, SignatureStatus } from "../../types";
 import * as nameResolver from "../../name_resolver";
 
 export type RevisionProps = {
   id: number;
   url: string;
-  time: string; // date
+  time: FormatDBTimestampToObject; // date
   domainId: string;
   isVerified: boolean;
   witnessDetail: string;
@@ -108,7 +109,7 @@ const formatPageInfo = async (
       return {
         id: rev_id,
         url: `${serverUrl}/index.php?title=${title}&oldid=${rev_id}`,
-        time: timestamp && formatDBTimestamp(timestamp),
+        time: timestamp && formatDBTimestampToObject(timestamp),
         domainId,
         isVerified: verification && verification === "VERIFIED" ? true : false,
         witnessDetail,

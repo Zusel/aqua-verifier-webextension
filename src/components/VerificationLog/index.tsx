@@ -49,7 +49,11 @@ const VerificationLog = ({ verificationLog }: VerificationLogProps) => {
             </Thead>
             <Tbody>
               {revisions.map((revision: RevisionProps, index: number) => (
-                <RevisionRow index={index} revision={revision} />
+                <RevisionRow
+                  key={`${index}-${revision.id}`}
+                  index={index}
+                  revision={revision}
+                />
               ))}
             </Tbody>
           </Table>

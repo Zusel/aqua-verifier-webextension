@@ -91,7 +91,7 @@ const RevisionRow = ({
   } = revision;
 
   return (
-    <Tr key={index}>
+    <Tr>
       <Td>{id}</Td>
       <Td>{time}</Td>
       <Td>{domainId}</Td>

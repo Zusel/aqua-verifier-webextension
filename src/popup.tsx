@@ -21,13 +21,13 @@ import {
   sanitizeWikiUrl,
   verificationStatusMap,
 } from "./verifier";
-import { formatPageInfo2HTML } from "data-accounting-external-verifier";
+import { formatPageInfo2HTML } from "aqua-verifier-js";
 import Layout from "./components/Layout";
 
 import * as nameResolver from "./name_resolver";
 
 // This object is actually used! It's used in the output of formatPageInfo2HTML
-// HTML string output from "data-accounting-external-verifier".
+// HTML string output from "aqua-verifier-js".
 const clipboard = new Clipboard(".clipboard-button");
 
 const Popup = () => {

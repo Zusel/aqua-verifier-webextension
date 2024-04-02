@@ -27,7 +27,7 @@ import Mime from "mime-types";
 
 import { verificationStatusMap } from "../../../verifier";
 
-import { verifyPage as externalVerifierVerifyPage } from "data-accounting-external-verifier";
+import { verifyPage as externalVerifierVerifyPage } from "aqua-verifier-js";
 import formatPageInfo from "../../../utils/formatPageInfo";
 
 const clipboard = new Clipboard(".clipboard-button");

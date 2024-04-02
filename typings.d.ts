@@ -1,2 +1,2 @@
-declare module 'data-accounting-external-verifier';
+declare module 'aqua-verifier-js';
 declare module 'wtf-plugin-html';

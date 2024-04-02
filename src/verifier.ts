@@ -1,7 +1,7 @@
 import {
   verifyPage as externalVerifierVerifyPage,
   apiVersion as externalVerifierApiVersion,
-} from "data-accounting-external-verifier";
+} from "aqua-verifier-js";
 const apiVersion = "0.3.0";
 import { VerificationStatusProps } from "./components/VerificationStatus";
 export const BadgeTextNA = "N/A";
